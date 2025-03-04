@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "files": {
+    "reference": "reference.fasta",
+    "pathogenJson": "pathogen.json",
+    "genomeAnnotation": "genome_annotation.gff3",
+    "treeJson": "tree.json",
+    "examples": "sequences.fasta",
+    "readme": "README.md",
+    "changelog": "CHANGELOG.md"
+  },
+  "attributes": {
+    "name": "Enterovirus D68",
+    "reference name": "Human enterovirus 68 strain Fermon, complete genome.",
+    "reference accession": "AY426531.1"
+  },
+  "defaultCds": "VP1",
+  "qc": {
+    "schemaVersion": "1.2.0",
+    "missingData": {
+      "enabled": true,
+      "missingDataThreshold": 2000,
+      "scoreBias": 500,
+      "scoreWeight": 50
+    },
+    "snpClusters": {
+      "enabled": true,
+      "windowSize": 100,
+      "clusterCutOff": 6,
+      "scoreWeight": 50
+    },
+    "mixedSites": {
+      "enabled": true,
+      "mixedSitesThreshold": 15,
+      "scoreWeight": 50
+    },
+    "frameShifts": {
+      "enabled": true,
+      "scoreWeight": 20
+    },
+    "stopCodons": {
+      "enabled": true,
+      "scoreWeight": 50
+    }
+  },
+  "cli": "3.0.0",
+  "web": "3.0.0",
+  "cdsOrderPreference":["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
+
+}
