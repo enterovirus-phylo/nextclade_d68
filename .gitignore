@@ -1,1 +1,14 @@
+## add your work email
 .env
+
+# will be downloaded with ingest
+metadata
+sequences
+data
+
+# log files & cache
+.snakemake
+logs
+scripts/__pycache__/
+*.code-workspace
+benchmarks

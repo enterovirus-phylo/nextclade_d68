@@ -1,3 +1,4 @@
+# Set the parameters
 REFERENCE_ACCESSION = "AY426531.1"
 TAXON_ID = 42789
 GENES = ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
@@ -5,6 +6,10 @@ ALLOWED_DIVERGENCE = "500"
 MIN_DATE = "1960-01-01"
 MIN_LENGTH = "6500"
 MAX_SEQS = "100"
+ROOTING = "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
+ID_FIELD= "accession" # either accession or strain, used for meta-id-column in augur
+
+# Set the paths
 GFF_PATH = "./dataset/genome_annotation.gff3"
 PATHOGEN_JSON = "./dataset/pathogen.json"
 GENBANK_PATH = "resources/ev_d68_reference_genome.gb"
@@ -15,7 +20,6 @@ AUSPICE_CONFIG = "resources/auspice_config.json"
 EXCLUDE = "resources/exclude.txt"
 SEQUENCES = "data/sequences.fasta"
 METADATA = "data/metadata.tsv"
-ROOTING = "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
 
 FETCH_SEQUENCES = False
 
@@ -30,7 +34,7 @@ rule all_nextclade:
 
 if FETCH_SEQUENCES == True:
 
-    include: "rules/fetch_from_ncbi.smk"
+    include: "ingest/Snakefile"
 
 
 rule add_reference_to_include:
