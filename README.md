@@ -1,4 +1,4 @@
-# Nextclade Setup for D68
+# Nextclade Setup for Enterovirus D68
 
 ## Folder Structure
 First, create the necessary folder structure as shown in the [example workflow](https://github.com/nextstrain/nextclade_data/tree/master/docs/example-workflow):
@@ -60,4 +60,4 @@ For more details on configuration, refer to the [Nextclade documentation](https:
 - These files are essential for building the reference tree and running Nextclade.
 
 ---
-This guide provides a structured workflow for setting up Nextclade for D68. If you encounter issues, refer to the official documentation or seek support from the Nextstrain community.
+This guide provides a structured workflow for setting up Nextclade for Enterovirus D68. If you encounter issues, refer to the official documentation or seek support from the Nextstrain community.

@@ -19,7 +19,7 @@
     "schemaVersion": "1.2.0",
     "missingData": {
       "enabled": true,
-      "missingDataThreshold": 2000,
+      "missingDataThreshold": 600,
       "scoreBias": 500,
       "scoreWeight": 50
     },
