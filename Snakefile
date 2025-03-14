@@ -5,17 +5,28 @@ ALLOWED_DIVERGENCE = "500"
 MIN_DATE = "1960-01-01"
 MIN_LENGTH = "6500"
 MAX_SEQS = "100"
-GFF_PATH = "../dataset/genome_annotation.gff3"
+GFF_PATH = "./dataset/genome_annotation.gff3"
+PATHOGEN_JSON = "./dataset/pathogen.json"
 GENBANK_PATH = "resources/ev_d68_reference_genome.gb"
-REFERENCE_PATH = "../dataset/reference.fasta"
-README_PATH = "../dataset/README.md"
-CHANGELOG_PATH = "../dataset/CHANGELOG.md"
-ROOTING = "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
+REFERENCE_PATH = "./dataset/reference.fasta"
+README_PATH = "./dataset/README.md"
+CHANGELOG_PATH = "./dataset/CHANGELOG.md"
 AUSPICE_CONFIG = "resources/auspice_config.json"
 EXCLUDE = "resources/exclude.txt"
+SEQUENCES = "data/sequences.fasta"
 METADATA = "data/metadata.tsv"
+ROOTING = "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
 
 FETCH_SEQUENCES = False
+
+rule all_augur:
+    input: 
+        augur_jsons = "results/auspice.json"
+
+rule all_nextclade:
+    input: 
+        augur_jsons = rules.test.output.output
+
 
 if FETCH_SEQUENCES == True:
 
@@ -42,7 +53,7 @@ rule filter:
     Only take sequences longer than {MIN_LENGTH}
     """
     input:
-        sequences="data/sequences.fasta",
+        sequences=SEQUENCES,
         metadata=METADATA,
         include=rules.add_reference_to_include.output,
     output:
@@ -238,8 +249,8 @@ rule export:
 
 rule subsample_example_sequences:
     input:
-        all_sequences="data/sequences.fasta",
-        tree_strains="results/tree_strains.txt",
+        all_sequences=SEQUENCES,
+        tree_strains=rules.exclude.output.strains,
     output:
         example_sequences="results/example_sequences.fasta",
     shell:
@@ -252,11 +263,11 @@ rule subsample_example_sequences:
 
 rule assemble_dataset:
     input:
-        tree="results/auspice.json",
+        tree=rules.export.output.auspice,
         reference=REFERENCE_PATH,
         annotation=GFF_PATH,
-        sequences="results/example_sequences.fasta",
-        pathogen="resources/pathogen.json",
+        sequences=rules.subsample_example_sequences.output.example_sequences,
+        pathogen=PATHOGEN_JSON,
         readme=README_PATH,
         changelog=CHANGELOG_PATH,
     output:
@@ -283,8 +294,8 @@ rule assemble_dataset:
 
 rule test:
     input:
-        dataset="dataset.zip",
-        sequences="dataset/sequences.fasta",
+        dataset=rules.assemble_dataset.output.dataset_zip,
+        sequences=rules.assemble_dataset.output.sequences,
     output:
         output=directory("test_out"),
     shell:

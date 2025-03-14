@@ -14,7 +14,7 @@ results/
 
 You can create these directories using the following command:
 ```bash
-mkdir dataset profiles resources rules scripts results
+mkdir -p dataset profiles resources rules scripts results
 ```
 
 ---
@@ -53,11 +53,25 @@ For more details on configuration, refer to the [Nextclade documentation](https:
 
 ---
 ### 4. Update the `Snakefile`
-- Modify lines 1-13 to adjust paths and parameters.
+- Modify lines 1-18 to adjust paths and parameters.
 - Ensure all necessary files for the Augur pipeline are present, including:
-  - `tree.json`
-  - `auspice_config.json`
+  - `sequences.fasta` & `metadata.tsv` 
+    - can be downloaded from NCBI Virus via ingest: `FETCH_SEQUENCES==True`
+  - [`auspice_config.json`](resources/auspice_config.json)
 - These files are essential for building the reference tree and running Nextclade.
 
 ---
-This guide provides a structured workflow for setting up Nextclade for Enterovirus D68. If you encounter issues, refer to the official documentation or seek support from the Nextstrain community.
+
+## Runnning the `Snakefile`
+To create the auspice JSON:
+```bash
+snakemake --cores 9 all_augur
+```
+To create the Nextclade example dataset:
+```bash
+snakemake --cores 9 all_nextclade
+```
+
+
+---
+This guide provides a structured workflow for setting up Nextclade for Enterovirus D68. If you encounter issues, refer to the [official documentation](https://docs.nextstrain.org/projects/nextclade/en/stable/index.html#).
