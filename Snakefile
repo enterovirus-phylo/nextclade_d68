@@ -12,6 +12,8 @@ README_PATH = "../dataset/README.md"
 CHANGELOG_PATH = "../dataset/CHANGELOG.md"
 ROOTING = "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
 AUSPICE_CONFIG = "resources/auspice_config.json"
+EXCLUDE = "resources/exclude.txt"
+METADATA = "data/metadata.tsv"
 
 FETCH_SEQUENCES = False
 
@@ -41,8 +43,8 @@ rule filter:
     """
     input:
         sequences="data/sequences.fasta",
-        metadata="data/metadata.tsv",
-        include="results/include.txt",
+        metadata=METADATA,
+        include=rules.add_reference_to_include.output,
     output:
         filtered_sequences="results/filtered_sequences_raw.fasta",
         filtered_metadata="results/filtered_metadata_raw.tsv",
@@ -66,7 +68,7 @@ rule filter:
 
 rule align:
     input:
-        sequences="results/filtered_sequences_raw.fasta",
+        sequences=rules.filter.output.filtered_sequences,
         reference=REFERENCE_PATH,
         annotation=GFF_PATH,
     output:
@@ -92,7 +94,7 @@ rule get_outliers:
     (likely to be sequencing errors or low quality/misannotated sequences) and put them in outliers.txt
     """
     input:
-        nextclade="results/nextclade.tsv",
+        nextclade=rules.align.output.tsv,
     output:
         outliers="results/outliers.txt",
         tmp="tmp/outliers.txt",
@@ -120,10 +122,10 @@ rule exclude:
     surface new bad sequences resulting in an infinite loop
     """
     input:
-        sequences="results/aligned.fasta",
-        metadata="data/metadata.tsv",
-        exclude="resources/exclude.txt",
-        outliers="results/outliers.txt",
+        sequences=rules.align.output.alignment,
+        metadata=METADATA,
+        exclude=EXCLUDE,
+        outliers=rules.get_outliers.output.outliers,
     output:
         filtered_sequences="results/filtered_aligned.fasta",
         filtered_metadata="results/filtered_metadata.tsv",
@@ -142,7 +144,7 @@ rule exclude:
 
 rule tree:
     input:
-        alignment="results/filtered_aligned.fasta",
+        alignment=rules.exclude.output.filtered_sequences,
     output:
         tree="results/tree_raw.nwk",
     shell:
@@ -155,8 +157,8 @@ rule tree:
 
 rule refine:
     input:
-        tree="results/tree_raw.nwk",
-        alignment="results/filtered_aligned.fasta",
+        tree=rules.tree.output.tree,
+        alignment=rules.exclude.output.filtered_sequences,
     output:
         tree="results/tree.nwk",
         node_data="results/branch_lengths.json",
@@ -175,8 +177,8 @@ rule refine:
 
 rule ancestral:
     input:
-        tree="results/tree.nwk",
-        alignment="results/filtered_aligned.fasta",
+        tree=rules.refine.output.tree,
+        alignment=rules.exclude.output.filtered_sequences,
         annotation=GENBANK_PATH,
     output:
         node_data="results/muts.json",
@@ -204,7 +206,7 @@ rule dummy_clades:
     in the tree. This rule creates a dummy clade membership for each node
     """
     input:
-        "results/branch_lengths.json",
+        rules.refine.output.node_data,
     output:
         "results/dummy_clades.json",
     shell:
@@ -215,11 +217,11 @@ rule dummy_clades:
 
 rule export:
     input:
-        tree="results/tree.nwk",
-        metadata="results/filtered_metadata.tsv",
-        mutations="results/muts.json",
-        branch_lengths="results/branch_lengths.json",
-        clades="results/dummy_clades.json",
+        tree=rules.refine.output.tree,
+        metadata=rules.exclude.output.filtered_metadata,
+        mutations=rules.ancestral.output.node_data,
+        branch_lengths=rules.refine.output.node_data,
+        clades=rules.dummy_clades.output,
         auspice_config=AUSPICE_CONFIG,
     output:
         auspice="results/auspice.json",
