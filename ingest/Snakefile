@@ -1,5 +1,5 @@
 if not config:
-    configfile: "config/config.yaml"
+    configfile: "./config/config.yaml"
 
 
 def _get_all_targets(wildcards):
@@ -51,3 +51,4 @@ include: "workflow/snakemake_rules/fetch_from_ncbi.smk"
 include: "workflow/snakemake_rules/curate.smk"
 
 include: "workflow/snakemake_rules/sort.smk"
+ 

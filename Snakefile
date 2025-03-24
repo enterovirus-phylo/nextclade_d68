@@ -21,6 +21,7 @@ EXCLUDE =               "resources/exclude.txt"
 SEQUENCES =             "data/sequences.fasta"
 METADATA =              "data/metadata.tsv"
 CLADES =                "resources/clades.tsv"
+ACCESSION_STRAIN =      "resources/accession_strain.tsv"
 
 FETCH_SEQUENCES = False
 
@@ -51,6 +52,32 @@ rule add_reference_to_include:
         echo "{REFERENCE_ACCESSION}" >> results/include.txt
         """
 
+rule curate:
+    message:
+        """
+        Cleaning up metadata with augur merge & augur curate
+        """
+    input:
+        meta=METADATA,  # Path to input metadata file
+        strains = ACCESSION_STRAIN  # Strain - accession lookup table
+    params:
+        strain_id_field = ID_FIELD,
+    output:
+        metadata = "results/metadata.tsv",  # Final output file for publications metadata
+    shell:
+        """
+        augur merge --metadata metadata={input.meta} strains={input.strains}\
+            --metadata-id-columns {params.strain_id_field} \
+            --output-metadata metadata.tmp
+        augur curate normalize-strings \
+            --metadata metadata.tmp \
+            --id-column {params.strain_id_field} \
+            --output-metadata {output.metadata}
+
+        rm metadata.tmp
+        """
+
+
 rule index_sequences:
     message:
         """
@@ -75,7 +102,7 @@ rule filter:
     input:
         sequences = SEQUENCES,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = METADATA,
+        metadata = rules.curate.output.metadata,
         include = rules.add_reference_to_include.output,
     output:
         filtered_sequences = "results/filtered_sequences_raw.fasta",
@@ -186,7 +213,7 @@ rule exclude:
     input:
         sequences = rules.align.output.alignment,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = METADATA,
+        metadata = rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
     params:
@@ -242,7 +269,7 @@ rule refine:
             --alignment {input.alignment} \
             --root {ROOTING} \
             --keep-polytomies \
-            --divergence-units mutations \
+            --divergence-unit mutations-per-site \
             --output-node-data {output.node_data} \
             --output-tree {output.tree}
         """
