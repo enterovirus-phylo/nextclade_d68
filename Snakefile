@@ -384,7 +384,7 @@ rule assemble_dataset:
         pathogen = "out-dataset/pathogen.json",
         readme = "out-dataset/README.md",
         changelog = "out-dataset/CHANGELOG.md",
-        dataset_zip = "dataset.zip",
+        zip = "dataset.zip",
     shell:
         """
         cp {input.tree} {output.tree}
@@ -394,13 +394,13 @@ rule assemble_dataset:
         cp {input.pathogen} {output.pathogen}
         cp {input.readme} {output.readme}
         cp {input.changelog} {output.changelog}
-        zip -rj dataset.zip  dataset/*
+        zip -rj {output.zip}  dataset/*
         """
 
 
 rule test:
     input:
-        dataset = rules.assemble_dataset.output.dataset_zip,
+        dataset = rules.assemble_dataset.output.zip,
         sequences = rules.assemble_dataset.output.sequences,
     output:
         output = directory("test_out"),
