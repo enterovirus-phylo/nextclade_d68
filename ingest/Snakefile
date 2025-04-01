@@ -40,8 +40,8 @@ rule all:
     input: _get_all_targets
     shell:
         """
-        cp data/sequences.fasta ../data/
-        cp data/metadata.tsv ../data/
+        cp data/sequences.fasta ../data
+        cp data/metadata.tsv ../data
         """
 
 
