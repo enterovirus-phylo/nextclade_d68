@@ -25,11 +25,7 @@ ACCESSION_STRAIN =      "resources/accession_strain.tsv"
 
 FETCH_SEQUENCES = False
 
-rule all_augur:
-    input: 
-        augur_jsons = "results/auspice.json"
-
-rule all_nextclade:
+rule all:
     input: 
         augur_jsons = "test_out/"
 
@@ -384,7 +380,7 @@ rule assemble_dataset:
         pathogen = "out-dataset/pathogen.json",
         readme = "out-dataset/README.md",
         changelog = "out-dataset/CHANGELOG.md",
-        zip = "dataset.zip",
+        dataset_zip = "dataset.zip",
     shell:
         """
         cp {input.tree} {output.tree}
@@ -394,13 +390,13 @@ rule assemble_dataset:
         cp {input.pathogen} {output.pathogen}
         cp {input.readme} {output.readme}
         cp {input.changelog} {output.changelog}
-        zip -rj {output.zip}  dataset/*
+        zip -rj dataset.zip  out-dataset/*
         """
 
 
 rule test:
     input:
-        dataset = rules.assemble_dataset.output.zip,
+        dataset = rules.assemble_dataset.output.dataset_zip,
         sequences = rules.assemble_dataset.output.sequences,
     output:
         output = directory("test_out"),
