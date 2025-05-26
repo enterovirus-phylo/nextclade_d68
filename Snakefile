@@ -5,7 +5,7 @@ GENES =                 ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B
 ALLOWED_DIVERGENCE =    "1000" # was 
 MIN_DATE =              "1950-01-01"
 MIN_LENGTH =            "6000" # was 6000 for whole genome build on Nextstrain
-MAX_SEQS =              "10000" #TODO: set to 10000 for testing
+MAX_SEQS =              "1000" #TODO: set to 10000 for testing
 ROOTING =               "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
 ID_FIELD=               "accession" # either accession or strain, used for meta-id-column in augur
 
@@ -23,16 +23,34 @@ METADATA =              "data/metadata.tsv"
 CLADES =                "resources/clades.tsv"
 ACCESSION_STRAIN =      "resources/accession_strain.tsv"
 
-FETCH_SEQUENCES = False
+FETCH_SEQUENCES = True
 
 rule all:
-    input: 
-        augur_jsons = "test_out/"
+    input:
+        auspice = "results/auspice.json",
+        augur_jsons = "test_out/",
+        data = "dataset.zip",
+        seqs = "results/example_sequences.fasta",
 
 
 if FETCH_SEQUENCES == True:
-
-    include: "ingest/Snakefile"
+    rule fetch:
+        input:
+            dir = "ingest"
+        output:
+            sequences=SEQUENCES,
+            metadata=METADATA
+        params:
+            seq=f"ingest/{SEQUENCES}",
+            meta=f"ingest/{METADATA}"
+        shell:
+            """
+            cd {input.dir} 
+            snakemake --cores 9 all
+            cd ../
+            cp -u {params.seq} {output.sequences}
+            cp -u {params.meta} {output.metadata}
+            """
 
 
 rule add_reference_to_include:
@@ -120,7 +138,7 @@ rule filter:
             {params.min_date} \
             --include {input.include} \
             --subsample-max-sequences {params.max_seqs} \
-            --output {output.filtered_sequences} \
+            --output-sequences {output.filtered_sequences} \
             --output-metadata {output.filtered_metadata}
         """
 
@@ -226,7 +244,7 @@ rule exclude:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id_field} \
             --exclude {input.exclude} {input.outliers} \
-            --output {output.filtered_sequences} \
+            --output-sequences {output.filtered_sequences} \
             --output-metadata {output.filtered_metadata} \
             --output-strains {output.strains}
         """
@@ -352,16 +370,22 @@ rule export:
 rule subsample_example_sequences:
     input:
         all_sequences = SEQUENCES,
-        tree_strains = rules.exclude.output.strains,
+        metadata = rules.curate.output.metadata,
     output:
         example_sequences = "results/example_sequences.fasta",
+    params:
+        strain_id_field = ID_FIELD,
     shell:
         """
-        # Exclude tree sequences from all sequences
-        seqkit grep -v -f {input.tree_strains} {input.all_sequences} \
-        | seqkit sample -n 100 -s 42 > {output.example_sequences}
+        augur filter \
+            --sequences {input.all_sequences} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id_field} \
+            --min-date 2020 --group-by year --subsample-max-sequences 50  \
+            --exclude-ambiguous-dates-by year \
+            --probabilistic-sampling \
+            --output-sequences {output.example_sequences}
         """
-
 
 rule assemble_dataset:
     input:
@@ -411,6 +435,10 @@ rule test:
 rule clean:
     shell:
         """
-        rm -rf results
-        rm -r dataset/tree.json
+        rm -r results
+        rm -r out-dataset/
+        rm -r test_out/
+        rm -r dataset.zip
+        rm ingest/data/*
+        rm data/*
         """
