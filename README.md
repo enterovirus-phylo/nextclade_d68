@@ -63,14 +63,27 @@ For more details on configuration, refer to the [Nextclade documentation](https:
 ---
 
 ## Runnning the `Snakefile`
-To create the auspice JSON:
+To create the auspice JSON and a Nextclade example dataset:
 ```bash
-snakemake --cores 9 all_augur
+snakemake --cores 9 all
 ```
-To create the Nextclade example dataset:
+This runs Nextclade on the example sequences in [`out-dataset/sequences.fasta`](out-dataset/sequences.fasta) using the dataset in `dataset`. The results are saved to the `test_out` directory and contain alignment, aligned translations and a summary TSV file.
+
+## Visualizing the Nextclade build
+
+One can also use the dataset in Nextclade Web by hosting the dataset through a local web server. For example, after having installed `node` and run `npm install -g serve`, one can host the dataset via:
+
 ```bash
-snakemake --cores 9 all_nextclade
+serve --cors out-dataset -l 3000
 ```
+
+And open Nextclade Web with a URL parameter `dataset-url` pointing to the local web server:
+
+```bash
+https://master.clades.nextstrain.org/?dataset-url=http://localhost:3000
+```
+
+Once the web page loads, you can click "Load example" and click run to test. You may want to reduce the maximum number of nucleotide markers to 500 to prevent Nextclade from freezing (click "Settings" at the top right, then select the "Sequence view" tab and reduce "Max. nucleotide markers to 500).
 
 
 ---
