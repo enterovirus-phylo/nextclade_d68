@@ -1,9 +1,9 @@
 # Set the parameters
-REFERENCE_ACCESSION =   "AY426531.1"
+REFERENCE_ACCESSION =   "AY426531"
 TAXON_ID =              42789
 GENES =                 ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
 ALLOWED_DIVERGENCE =    "1000" # was 
-MIN_DATE =              "1950-01-01"
+MIN_DATE =              "1990-01-01"
 MIN_LENGTH =            "6000" # was 6000 for whole genome build on Nextstrain
 MAX_SEQS =              "1000" #TODO: set to 10000 for testing
 ROOTING =               "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
@@ -22,6 +22,8 @@ SEQUENCES =             "data/sequences.fasta"
 METADATA =              "data/metadata.tsv"
 CLADES =                "resources/clades.tsv"
 ACCESSION_STRAIN =      "resources/accession_strain.tsv"
+INCLUDE_EXAMPLES =      "resources/include_examples.txt"
+REFINE_DROP =           "resources/dropped_refine.txt"
 
 FETCH_SEQUENCES = True
 
@@ -40,16 +42,11 @@ if FETCH_SEQUENCES == True:
         output:
             sequences=SEQUENCES,
             metadata=METADATA
-        params:
-            seq=f"ingest/{SEQUENCES}",
-            meta=f"ingest/{METADATA}"
         shell:
             """
             cd {input.dir} 
             snakemake --cores 9 all
             cd ../
-            cp -u {params.seq} {output.sequences}
-            cp -u {params.meta} {output.metadata}
             """
 
 
@@ -58,7 +55,7 @@ rule add_reference_to_include:
     Create an include file for augur filter
     """
     input:
-        include = "resources/include.txt",
+        "resources/include.txt",
     output:
         "results/include.txt",
     shell:
@@ -230,6 +227,8 @@ rule exclude:
         metadata = rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
+        refine = REFINE_DROP,
+
     params:
         strain_id_field = ID_FIELD,
     output:
@@ -243,7 +242,7 @@ rule exclude:
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id_field} \
-            --exclude {input.exclude} {input.outliers} \
+            --exclude {input.exclude} {input.outliers} {input.refine} \
             --output-sequences {output.filtered_sequences} \
             --output-metadata {output.filtered_metadata} \
             --output-strains {output.strains}
@@ -267,7 +266,6 @@ rule tree:
             --nthreads {threads}\
             --output {output.tree} \
         """
-
 
 rule refine:
     input:
@@ -334,13 +332,13 @@ rule clades:
         mutations = rules.ancestral.output.node_data,
         clades = CLADES
     output:
-        "results/clades.json"
+        json = "results/clades.json",
     shell:
         """
         augur clades --tree {input.tree} \
             --mutations {input.mutations} \
             --clades {input.clades} \
-            --output-node-data {output}
+            --output-node-data {output.json}
         """
 
 rule export:
@@ -349,7 +347,7 @@ rule export:
         metadata = rules.exclude.output.filtered_metadata,
         mutations = rules.ancestral.output.node_data,
         branch_lengths = rules.refine.output.node_data,
-        clades = rules.clades.output, # dummy_clades if not set yet
+        clades = rules.clades.output.json, # dummy_clades if not set yet
         auspice_config = AUSPICE_CONFIG,
     params:
         strain_id_field = ID_FIELD,
@@ -366,26 +364,66 @@ rule export:
             --output {output.auspice}
         """
 
+rule extract_clades_tsv:
+    input:
+        json=rules.clades.output.json,
+    output:
+        tsv = "results/clades_metadata.tsv"
+    run:
+        import json
+        import csv
+
+        with open(input.json) as f:
+            data = json.load(f)
+
+        nodes = data.get("nodes", {})
+
+        with open(output.tsv, "w", newline="") as out_f:
+            writer = csv.writer(out_f, delimiter="\t")
+            writer.writerow(["accession", "clade"])
+
+            for accession, values in nodes.items():
+                clade = values.get("clade_membership", None)
+                if clade:
+                    writer.writerow([accession, clade])
+
 
 rule subsample_example_sequences:
     input:
         all_sequences = SEQUENCES,
         metadata = rules.curate.output.metadata,
+        exclude = EXCLUDE,
+        outliers = rules.get_outliers.output.outliers,
+        incl_examples = INCLUDE_EXAMPLES,
+        clades =  rules.extract_clades_tsv.output.tsv,
+        tree_strains = "results/tree_strains.txt",  # strains in the tree
+        refine = REFINE_DROP,
     output:
         example_sequences = "results/example_sequences.fasta",
     params:
         strain_id_field = ID_FIELD,
     shell:
         """
+        augur merge \
+            --metadata metadata={input.metadata} clades={input.clades} \
+            --metadata-id-columns {params.strain_id_field} \
+            --output-metadata metadata.tmp
         augur filter \
             --sequences {input.all_sequences} \
-            --metadata {input.metadata} \
+            --metadata metadata.tmp \
             --metadata-id-columns {params.strain_id_field} \
-            --min-date 2020 --group-by year --subsample-max-sequences 50  \
+            --min-date 2010 --group-by year clade \
+            --subsample-max-sequences 25  \
+            --min-length 4000 \
+            --include {input.incl_examples} \
+            --exclude {input.exclude} {input.outliers} {input.refine} \
             --exclude-ambiguous-dates-by year \
             --probabilistic-sampling \
             --output-sequences {output.example_sequences}
+        rm metadata.tmp
         """
+        # seqkit grep -v -f {input.tree_strains} {input.all_sequences} \
+        # | seqkit sample -n 100 -s 41 > {output.example_sequences}
 
 rule assemble_dataset:
     input:

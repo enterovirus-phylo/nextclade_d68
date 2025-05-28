@@ -26,6 +26,6 @@ B	nuc	1956	T
 B	nuc	4749	A
 B	nuc	6087	T
 
-A	nuc	156	T
-A	nuc	675	G
-A	nuc	333	A
+pre-ABC	nuc	156	T
+pre-ABC	nuc	675	G
+pre-ABC	nuc	333	A

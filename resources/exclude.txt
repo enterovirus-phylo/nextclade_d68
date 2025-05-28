@@ -27,11 +27,6 @@ KU844179
 NC_038308
 AY426531
 
-## high diversity (A2 clade)
-PQ238717
-PQ238718
-PQ238720
-
 ## accessions not found
 USA/MN/2003-23220aa #dropped because run goes bad if included (usually auto-dropped by refine)
 EV-D68/Homosapiens/USA/O622a/2012aa #dropped because run goes bad if included (usually auto-dropped by refine)
