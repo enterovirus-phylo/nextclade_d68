@@ -228,6 +228,7 @@ rule exclude:
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         refine = REFINE_DROP,
+        example = INCLUDE_EXAMPLES,
 
     params:
         strain_id_field = ID_FIELD,
@@ -242,7 +243,7 @@ rule exclude:
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id_field} \
-            --exclude {input.exclude} {input.outliers} {input.refine} \
+            --exclude {input.exclude} {input.outliers} {input.refine} {input.example} \
             --output-sequences {output.filtered_sequences} \
             --output-metadata {output.filtered_metadata} \
             --output-strains {output.strains}
