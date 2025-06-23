@@ -294,6 +294,7 @@ rule ancestral:
         annotation=GENBANK_PATH,
     output:
         node_data="results/muts.json",
+        ancestral_sequences="results/ancestral_sequences.fasta",
     params:
         translation_template=r"results/translations/cds_%GENE.translation.fasta",
         output_translation_template=r"results/translations/cds_%GENE.ancestral.fasta",
@@ -308,7 +309,8 @@ rule ancestral:
             --genes {params.genes} \
             --translations {params.translation_template} \
             --output-node-data {output.node_data} \
-            --output-translations {params.output_translation_template}
+            --output-translations {params.output_translation_template}\
+            --output-sequences {output.ancestral_sequences} 
         """
 
 
