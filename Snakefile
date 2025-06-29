@@ -60,7 +60,8 @@ rule add_reference_to_include:
         "results/include.txt",
     shell:
         """
-        echo "{REFERENCE_ACCESSION}" >> results/include.txt
+        cat {input} >> {output}
+        echo "{REFERENCE_ACCESSION}" >> {output}
         """
 
 rule curate:
@@ -415,12 +416,12 @@ rule subsample_example_sequences:
             --sequences {input.all_sequences} \
             --metadata metadata.tmp \
             --metadata-id-columns {params.strain_id_field} \
-            --min-date 2010 --group-by year clade \
-            --subsample-max-sequences 25  \
             --min-length 4000 \
             --include {input.incl_examples} \
             --exclude {input.exclude} {input.outliers} {input.refine} \
             --exclude-ambiguous-dates-by year \
+            --min-date 2014 --group-by clade \
+            --subsample-max-sequences 10  \
             --probabilistic-sampling \
             --output-sequences {output.example_sequences}
         rm metadata.tmp
