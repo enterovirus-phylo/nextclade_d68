@@ -12,7 +12,12 @@
     }
   ],  "colorings": [
     {
-      "title": "Sampling date",
+      "title": "Clade",
+      "type": "categorical",
+      "key": "clade_membership"
+    },
+    {
+      "title": "Date",
       "type": "continuous",
       "key": "date"
     },
@@ -22,15 +27,11 @@
       "key": "country"
     },
     {
-      "title": "Region",
+      "title": "Global region",
       "type": "categorical",
       "key": "region"
-    },
-    {
-      "title": "Clade",
-      "type": "categorical",
-      "key": "clade_membership"
     }
+    
   ],
   "geo_resolutions": [
     "country", "region"

@@ -3,100 +3,104 @@ DEFINITION  Human enterovirus 68 strain Fermon, complete genome.
 ACCESSION   AY426531
 VERSION     AY426531.1
 KEYWORDS    .
-SOURCE      enterovirus D68 (EV-D68)
-  ORGANISM  enterovirus D68
-            Viruses; Riboviria; Orthornavirae; Pisuviricota; Pisoniviricetes;
-            Picornavirales; Picornaviridae; Ensavirinae; Enterovirus;
-            Enterovirus D.
+SOURCE      Enterovirus D68 (EV-D68)
+  ORGANISM  Enterovirus D68
+            Viruses; ssRNA viruses; ssRNA positive-strand viruses, no DNA
+            stage; Picornavirales; Picornaviridae; Enterovirus; Enterovirus D.
 REFERENCE   1  (bases 1 to 7367)
   AUTHORS   Oberste,M.S., Maher,K., Schnurr,D., Flemister,M.R., Lovchik,J.C.,
             Peters,H., Sessions,W., Kirk,C., Chatterjee,N., Fuller,S.,
             Hanauer,J.M. and Pallansch,M.A.
   TITLE     Enterovirus 68 is associated with respiratory illness and shares
-            biological features with both the enteroviruses and the rhinoviruses
+            biological features with both the enteroviruses and the
+            rhinoviruses
   JOURNAL   J. Gen. Virol. 85 (PT 9), 2577-2584 (2004)
    PUBMED   15302951
 REFERENCE   2  (bases 1 to 7367)
-  AUTHORS   Oberste,M.S., Maher,K., Schnurr,D., Peters,H., Sessions,W., Kirk,C.,
-            Chatterjee,N., Fuller,S., Hanauer,J.M. and Pallansch,M.A.
+  AUTHORS   Oberste,M.S., Maher,K., Schnurr,D., Peters,H., Sessions,W.,
+            Kirk,C., Chatterjee,N., Fuller,S., Hanauer,J.M. and Pallansch,M.A.
   TITLE     Direct Submission
   JOURNAL   Submitted (01-OCT-2003) Respiratory and Enteric Virus Branch,
             Centers for Disease Control and Prevention, 1600 Clifton Rd NE,
             Mailstop G-17, Atlanta, GA 30333, USA
 FEATURES             Location/Qualifiers
      source          1..7367
-                     /organism="enterovirus D68"
+                     /organism="Enterovirus D68"
                      /mol_type="genomic RNA"
                      /strain="Fermon"
                      /db_xref="taxon:42789"
-                     /geo_loc_name="USA"
+                     /country="USA"
                      /note="prototype strain of Enterovirus 68"
+     5'UTR           1..732
+     CDS             733..7299
+                     /codon_start=1
+                     /product="polyprotein"
+                     /protein_id="AAR98503.1"
+                     /translation="MGAQVTRQQTGTHENANIATNGSHITYNQINFYKDSYAASASKQ
+                     DFSQDPSKFTEPVVEGLKAGAPVLKSPSAEACGYSDRVLQLKLGNSAIVTQEAANYCC
+                     AYGEWPNYLPDHEAVAIDKPTQPETSTDRFYTLRSVKWESNSTGWWWKLPDALNNIGM
+                     FGQNVQYHYLYRSGFLIHVQCNATKFHQGALLVVAIPEHQRGAHDTTTSPGFNDIMKG
+                     ERGGTFNHPYVLDDGTSIACATIFPHQWINLRTNNSATIVLPWMNVAPMDFPLRHNQW
+                     TLAVIPVVPLGTRTMSSVVPITVSIAPMCCEFNGLRHAITQGVPTYLLPGSGQFLTTD
+                     DHSSAPVLPCFNPTPEMHIPGQIRNMLEMIQVESMMEINNTDGANGMERLRVDISVQA
+                     DLDQLLFNIPLDIQLDGPLRNTLVGNISRYYTHWSGSLEMTFMFCGSFMATGKLILCY
+                     TPPGGSCPTTRETAMLGTHIVWDFGLQSSITLIIPWISGSHYRMFNSDAKSTNANVGY
+                     VTCFMQTNLIVPSESSDTCSLIGFIAAKDDFSLRLMRDSPDIGQSNHLHGAEAAYQVE
+                     SIIKTATDTVKSEINAELGVVPSLNAVETGATSNTEPEEAIQTRTVINQHGVSETLVE
+                     NFLGRAALVSKKSFEYKNHASSSAGTHKNFFKWTINTKSFVQLRRKLELFTYLRFDAE
+                     ITILTTVAVNGNNDSTYMGLPDLTLQAMFVPTGALTPKEQDSFHWQSGSNASVFFKIS
+                     DPPARMTIPFMCINSAYSVFYDGFAGFEKNGLYGINPADTIGNLCVRIVNEHQPVGFT
+                     VTVRVYMKPKHIKAWAPRPPRTMPYMSIANANYKGRDTAPNTLNAIIGNRASVTTMPH
+                     NIVTTGPGFGGVFVGSFKIINYHLATIEERQSAIYVDWQSDVLVTPIAAHGRHQIARC
+                     KCNTGVYYCRHRDRSYPICFEGPGIQWIEQNEYYPARYQTNVLLAAGPAEAGDCGGLL
+                     VCPHGVIGLLTAGGGGIVAFTDIRNLLWLDTDVMEQGITDYIQNLGNAFGAGFTETIS
+                     NKAKEVQDMLIGESSLLEKLLKALIKIISALVIVIRNSEDLITVTATLALLGCHDSPW
+                     SYLKQKVCSYLGIPYVPRQSESWLKKFTEACNALRGLDWLSQKIDKFINWLKTKILPE
+                     AREKYEFVQRLKQLPVIEKQVSTIEHSCPTTERQQALFNNVQYYSHYCRKYAPLYAVE
+                     SKRVAALEKKINNYIQFKSKSRIEPVCLIIHGSPGTGKSVASNLIARAITEKLGGDIY
+                     SLPPDPKYFDGYKQQTVVLMDDLMQNPDGNDISMFCQMVSTVDFIPPMASLEEKGTLY
+                     TSPFLIATTNAGSIHAPTVSDSKALSRRFKFDVDIEVTDSYKDSNKLDMSRAVEMCKP
+                     DNCTPTNYKRCCPLICGKAIQFRDRRTNARSTVDMLVTDIIKEYRTRNSTQDKLEALF
+                     QGPPQFKEIKISVAPDTPAPDAINDLLRSVDSQEVRDYCQKKGWIVIHPSNELVVEKH
+                     ISRAFITLQAIATFVSIAGVVYVIYKLFAGIQGPYTGIPNPKPKVPSLRTAKVQGPGF
+                     DFAQAIMKKNTVIARTEKGEFTMLGVYDRVAVIPTHASVGEIIYINDVETRVLDACAL
+                     RDLTDTNLEITIVKLDRNQKFRDIRHFLPRCEDDYNDAVLSVHTSKFPNMYIPVGQVT
+                     NYGFLNLGGTPTHRILMYNFPTRAGQCGGVVTTTGKVIGIHVGGNGAQGFAAMLLHSY
+                     FTDTQGEIVSNEKSGMCINAPAKTKLQPSVFHQVFEGSKEPAVLNSKDPRLKTDFEEA
+                     IFSKYTGNKIMLMDEYMEEAVDHYVGCLEPLDISVDPIPLENAMYGMEGLEALDLTTS
+                     AGFPYLLQGKKKRDIFNRQTRDTSEMTKMLEKYGVDLPFVTFVKDELRSREKVEKGKS
+                     RLIEASSLNDSVAMRVAFGNLYATFHNNPGTATGSAVGCDPDIFWSKIPILLDGEIFA
+                     FDYTGYDASLSPVWFACLKKVLIKLGYTHQTSFIDYLCHSVHLYKDRKYVINGGMPSG
+                     SSGTSIFNTMINNIIIRTLLIKVYKGIDLDQFKMIAYGDDVIASYPHKIDPGLLAEAG
+                     KHYGLVMTPADKGTSFIDTNWENVTFLKRYFRADDQYPFLIHPVMPMKEIHESIRWTK
+                     DPRNTQDHVRSLCYLAWHNGEEAYNEFCRKIRSVPVGRALTLPAYSSLRRKWLDSF"
      CDS             733..939
-                     /ID="id-AAR98503.1:1..69"
-                     /gbkey="Prot"
-                     /product="VP4"
-                     /Name="VP4"
-                     /locus_tag="VP4"
+                     /gene="VP4"
+                     /note="capsid protein"
      CDS             940..1683
-                     /ID="id-AAR98503.1:70..317"
-                     /gbkey="Prot"
-                     /product="VP2"
-                     /Name="VP2"
-                     /locus_tag="VP2"
-     CDS             1684..2388
-                     /ID="id-AAR98503.1:318..552"
-                     /gbkey="Prot"
-                     /product="VP3"
-                     /Name="VP3"
-                     /locus_tag="VP3"
-     CDS             2389..3315
-                     /ID="id-AAR98503.1:553..861"
-                     /gbkey="Prot"
-                     /product="VP1"
-                     /Name="VP1"
-                     /locus_tag="VP1"
+                     /gene="VP2"
+                     /note="capsid protein"
+     CDS             1684..2424
+                     /gene="VP3"
+                     /note="capsid protein"
+     CDS             2425..3315
+                     /gene="VP1"
+                     /note="capsid protein"
      CDS             3316..3756
-                     /ID="id-AAR98503.1:862..1008"
-                     /gbkey="Prot"
-                     /product="2A"
-                     /Name="2A"
-                     /locus_tag="2A"
+                     /gene="2A"
      CDS             3757..4053
-                     /ID="id-AAR98503.1:1009..1107"
-                     /gbkey="Prot"
-                     /product="2B"
-                     /Name="2B"
-                     /locus_tag="2B"
+                     /gene="2B"
      CDS             4054..5043
-                     /ID="id-AAR98503.1:1108..1437"
-                     /gbkey="Prot"
-                     /product="2C"
-                     /Name="2C"
-                     /locus_tag="2C"
+                     /gene="2C"
      CDS             5044..5310
-                     /ID="id-AAR98503.1:1438..1526"
-                     /gbkey="Prot"
-                     /product="3A"
-                     /Name="3A"
-                     /locus_tag="3A"
+                     /gene="3A"
      CDS             5311..5376
-                     /ID="id-AAR98503.1:1527..1548"
-                     /gbkey="Prot"
-                     /product="3B"
-                     /Name="3B"
-                     /locus_tag="3B"
+                     /gene="3B"
      CDS             5377..5925
-                     /ID="id-AAR98503.1:1549..1731"
-                     /gbkey="Prot"
-                     /product="3C"
-                     /Name="3C"
-                     /locus_tag="3C"
+                     /gene="3C"
      CDS             5926..7296
-                     /ID="id-AAR98503.1:1732..2188"
-                     /gbkey="Prot"
-                     /product="3D"
-                     /Name="3D"
-                     /locus_tag="3D"
+                     /gene="3D"
+     3'UTR           7300..7367
 ORIGIN
         1 ttaaaacagc tctggggttg ttcccactca agggcccacg tggcggctag tactctggta
        61 tctcggtacc tttgtacgcc tgttttaatt ccctccccaa cgtaacttag aagcttttaa

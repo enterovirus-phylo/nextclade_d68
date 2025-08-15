@@ -420,8 +420,8 @@ rule subsample_example_sequences:
             --include {input.incl_examples} \
             --exclude {input.exclude} {input.outliers} {input.refine} \
             --exclude-ambiguous-dates-by year \
-            --min-date 2014 --group-by clade \
-            --subsample-max-sequences 10  \
+            --min-date 2012 --group-by clade \
+            --subsample-max-sequences 15  \
             --probabilistic-sampling \
             --output-sequences {output.example_sequences}
         rm metadata.tmp
@@ -477,10 +477,6 @@ rule test:
 rule clean:
     shell:
         """
-        rm -r results
-        rm -r out-dataset/
-        rm -r test_out/
-        rm -r dataset.zip
-        rm ingest/data/*
-        rm data/*
+        rm -r results out-dataset test_out dataset.zip tmp
+        rm ingest/data/* data/*
         """

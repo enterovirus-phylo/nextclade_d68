@@ -3,6 +3,8 @@ OQ933700 # VP1
 KT285319 # mediocre
 KM892499 # bad; recombinant
 OP321151 # bad sequence
+LC629446 # mediocre
+KX433162 # frameshift
 
 # good sequences
 OQ285851 #B3
