@@ -18,7 +18,7 @@
     },
     {
       "title": "Date",
-      "type": "continuous",
+      "type": "ordinal",
       "key": "date"
     },
     {

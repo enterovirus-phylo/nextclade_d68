@@ -60,7 +60,14 @@ For more details on configuration, refer to the [Nextclade documentation](https:
   - [`auspice_config.json`](resources/auspice_config.json)
 - These files are essential for building the reference tree and running Nextclade.
 
----
+## Ingest
+The ingest process downloads sequences and metadata from NCBI Virus. For more details, refer to the [Ingest Documentation](ingest/README.md).
+
+The following **packages** must be installed to run the ingest process:
+```
+conda-forge/bioconda: csvtk, nextclade, tsv-utils, seqkit, zip, unzip, entrez-direct, ncbi-datasets-cli
+```
+
 
 ## Runnning the `Snakefile`
 To create the auspice JSON and a Nextclade example dataset:
