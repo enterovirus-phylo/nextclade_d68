@@ -24,6 +24,8 @@ CLADES =                "resources/clades.tsv"
 ACCESSION_STRAIN =      "resources/accession_strain.tsv"
 INCLUDE_EXAMPLES =      "resources/include_examples.txt"
 REFINE_DROP =           "resources/dropped_refine.txt"
+COLORS =                "resources/colors.tsv"
+COLORS_SCHEMES =        "resources/color_schemes.tsv"
 
 FETCH_SEQUENCES = True
 
@@ -345,7 +347,57 @@ rule clades:
             --output-node-data {output.json}
         """
 
-rule export:
+rule get_dates:
+    """Create ordering for color assignment"""
+    input:
+        metadata = rules.exclude.output.filtered_metadata
+    output:
+        ordering = "results/color_ordering.tsv"
+    run:
+        import pandas as pd
+        column = "date"
+        meta = pd.read_csv(input.metadata, delimiter='\t')
+
+        if column not in meta.columns:
+            print(f"The column '{column}' does not exist in the file.")
+            sys.exit(1)
+
+        deflist = meta[column].dropna().tolist()
+        # Store unique values (ordered)
+        deflist = sorted(set(deflist))
+        if "XXXX-XX-XX" in deflist:
+            deflist.remove("XXXX-XX-XX")
+
+        result_df = pd.DataFrame({
+            'column': ['date'] * len(deflist),
+            'value': deflist
+        })
+
+        result_df.to_csv(output.ordering, sep='\t', index=False, header=False)
+        
+
+rule colors:
+    """Assign colors based on ordering"""
+    input:
+        ordering=rules.get_dates.output.ordering,
+        color_schemes=COLORS_SCHEMES,
+        colors=COLORS,
+    output:
+        colors="results/colors_dates.tsv",
+        final_colors="results/final_colors.tsv"
+    shell:
+        """
+        python3 scripts/assign-colors.py \
+            --ordering {input.ordering} \
+            --color-schemes {input.color_schemes} \
+            --output {output.colors}
+
+        echo -e '\ndate\tXXXX-XX-XX\t#a6acaf' >> {output.colors}
+
+        cat {output.colors} {input.colors} >> {output.final_colors}
+        """
+
+rule export: 
     input:
         tree = rules.refine.output.tree,
         metadata = rules.exclude.output.filtered_metadata,
@@ -353,8 +405,10 @@ rule export:
         branch_lengths = rules.refine.output.node_data,
         clades = rules.clades.output.json, # dummy_clades if not set yet
         auspice_config = AUSPICE_CONFIG,
+        colors = rules.colors.output.final_colors
     params:
         strain_id_field = ID_FIELD,
+        fields="region country date",
     output:
         auspice = "results/auspice.json",
     shell:
@@ -364,6 +418,8 @@ rule export:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id_field} \
             --auspice-config {input.auspice_config} \
+            --color-by-metadata {params.fields} \
+            --colors {input.colors} \
             --node-data {input.mutations} {input.branch_lengths} {input.clades} \
             --output {output.auspice}
         """

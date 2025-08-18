@@ -37,7 +37,7 @@ A converter is available here: [EV-D68 Protein Numbering Converter](https://hodc
 
 EV-D68 is divided into subgenogroups A (A1-A2), B (B1–B3), and C. 
 
-These designations are based on phylogenetic structure and are widely used in molecular epidemiology, similar to genotype/subgenotype systems for other enteroviruses.  
+These designations are based on phylogenetic structure and are widely used in molecular epidemiology, similar to subgenotype systems for other enteroviruses.  
 Unlike influenza (H1N1, H3N2) or SARS-CoV-2, there is no universal, standardized global lineage nomenclature for enteroviruses — naming follows conventions from published studies and surveillance practice.
 
 ## What is a Nextclade dataset?
