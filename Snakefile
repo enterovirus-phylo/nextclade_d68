@@ -26,8 +26,37 @@ INCLUDE_EXAMPLES =      "resources/include_examples.txt"
 REFINE_DROP =           "resources/dropped_refine.txt"
 COLORS =                "resources/colors.tsv"
 COLORS_SCHEMES =        "resources/color_schemes.tsv"
+ANCESTRAL_ROOT =        "resources/inferred-root.fasta"
 
 FETCH_SEQUENCES = True
+ANCESTRAL_ROOT_INFERRENCE = True
+
+onstart:
+    if ANCESTRAL_ROOT_INFERRENCE and not config.get("root_inference_confirmed", False):
+        print(f"""
+        ╔══════════════════════════════════════════════════════════════╗
+        ║                 ENTEROVIRUS ROOT INFERENCE                   ║
+        ║                                                              ║
+        ║  This workflow will infer an ancestral root sequence for     ║
+        ║  your enterovirus dataset and overwrite:                     ║
+        ║  • results/metadata.tsv                                      ║
+        ║  • {SEQUENCES}                                      ║
+        ║                                                              ║
+        ║  To confirm, restart with:                                   ║
+        ║  snakemake -c 9 all --config root_inference_confirmed=true   ║
+        ╚══════════════════════════════════════════════════════════════╝
+        """)
+        sys.exit("Root inference requires confirmation. See message above.")
+
+onsuccess:
+    if ANCESTRAL_ROOT_INFERRENCE:
+        print(f"""
+        • Enterovirus root inference completed successfully!
+        • Updated files:
+           • {ANCESTRAL_ROOT} (ancestral sequence)
+           • results/metadata.tsv (merged metadata)
+           • {SEQUENCES} (combined sequences with ancestral root)
+        """)
 
 rule all:
     input:
@@ -35,6 +64,7 @@ rule all:
         augur_jsons = "test_out/",
         data = "dataset.zip",
         seqs = "results/example_sequences.fasta",
+        **({"root": ANCESTRAL_ROOT} if ANCESTRAL_ROOT_INFERRENCE else {})
 
 
 if FETCH_SEQUENCES == True:
@@ -50,21 +80,6 @@ if FETCH_SEQUENCES == True:
             snakemake --cores 9 all
             cd ../
             """
-
-
-rule add_reference_to_include:
-    """
-    Create an include file for augur filter
-    """
-    input:
-        "resources/include.txt",
-    output:
-        "results/include.txt",
-    shell:
-        """
-        cat {input} >> {output}
-        echo "{REFERENCE_ACCESSION}" >> {output}
-        """
 
 rule curate:
     message:
@@ -91,6 +106,47 @@ rule curate:
         rm metadata.tmp
         """
 
+if ANCESTRAL_ROOT_INFERRENCE == True:
+    rule root_inferrence:
+        message:
+            """
+            Running inferred-root snakefile for inference of the ancestral root. 
+            This reference will be included in the Nextclade reference tree.
+            WARNING: This will overwrite your sequence & meta file!
+            """
+        input:
+            dir = "inferred-root",
+            dataset_path = "dataset",
+            meta = rules.curate.output.metadata,
+            seq = SEQUENCES,
+            meta_ancestral = "resources/static_inferred_root_metadata.tsv",
+        params:
+            strain_id_field = ID_FIELD,
+        output:
+            inref = ANCESTRAL_ROOT,
+            seq = "results/sequences_with_ancestral.fasta",
+            meta = "results/metadata_with_ancestral.tsv",
+        shell:
+            """
+            # Run the inferred-root snakefile
+            echo "Running inferred-root workflow..."
+            cd {input.dir} 
+            snakemake --cores 9 all
+            cd ../
+
+            # Combine sequences (fixed the typo)
+            echo "Combining sequences with ancestral root..."
+            cat {input.seq} {output.inref} > {output.seq}
+
+            # Merge metadata
+            echo "Merging metadata..."
+            augur merge \
+                --metadata metadata={input.meta} ancestral={input.meta_ancestral} \
+                --metadata-id-columns {params.strain_id_field} \
+                --output-metadata {output.meta}
+            
+            echo "Root inference completed successfully!"
+            """
 
 rule index_sequences:
     message:
@@ -98,7 +154,7 @@ rule index_sequences:
         Creating an index of sequence composition for filtering
         """
     input:
-        sequences = SEQUENCES,
+        sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
     output:
         sequence_index = "results/sequence_index.tsv"
     shell:
@@ -108,15 +164,30 @@ rule index_sequences:
             --output {output.sequence_index}
         """
 
+rule add_reference_to_include:
+    """
+    Create an include file for augur filter
+    """
+    input:
+        "resources/include.txt",
+    output:
+        "results/include.txt",
+    shell:
+        """
+        cat {input} >> {output}
+        echo "{REFERENCE_ACCESSION}" >> {output}
+        echo ancestral_sequence >> {output}
+        """
+
 rule filter:
     """
     Exclude sequences from before {MIN_DATE} and subsample to {MAX_SEQS} sequences.
     Only take sequences longer than {MIN_LENGTH}
     """
     input:
-        sequences = SEQUENCES,
+        sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = rules.curate.output.metadata,
+        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
         include = rules.add_reference_to_include.output,
     output:
         filtered_sequences = "results/filtered_sequences_raw.fasta",
@@ -142,7 +213,6 @@ rule filter:
             --output-metadata {output.filtered_metadata}
         """
 
-
 rule align:
     message:
         """
@@ -157,16 +227,15 @@ rule align:
         tsv = "results/nextclade.tsv",
     params:
         translation_template = lambda w: "results/translations/cds_{cds}.translation.fasta",
-        #high-diversity 
-        penalty_gap_extend = 1, #make longer gaps more costly - default is 0
-        penalty_gap_open = 13,  #make gaps more expensive relative to mismatches - default is 13
-        penalty_gap_open_in_frame = 18, #make gaps more expensive relative to mismatches - default is 7
+        penalty_gap_extend = 2, #make longer gaps more costly - default is 0
+        penalty_gap_open = 20,  #make gaps more expensive relative to mismatches - default is 13
+        penalty_gap_open_in_frame = 30, #make gaps more expensive relative to mismatches - default is 7
         penalty_gap_open_out_of_frame = 23, #make out of frame gaps more expensive - default is 8 # prev was 19
-        kmer_length = 6, #reduce to find more matches - default is 10
+        kmer_length = 8, #reduce to find more matches - default is 10
         kmer_distance = 25, #reduce to try more seeds - default is 50
         min_match_length = 30, #reduce to keep more seeds - default is 40
         allowed_mismatches = 15, #increase to keep more seeds - default is 8
-        min_length = 30, # min_length - default is 100
+        min_length = 100, # min_length - default is 100
         #cost of a mutation is 4
     shell:
         """
@@ -227,7 +296,7 @@ rule exclude:
     input:
         sequences = rules.align.output.alignment,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = rules.curate.output.metadata,
+        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         refine = REFINE_DROP,
@@ -314,7 +383,7 @@ rule ancestral:
             --translations {params.translation_template} \
             --output-node-data {output.node_data} \
             --output-translations {params.output_translation_template}\
-            --output-sequences {output.ancestral_sequences} 
+            --output-sequences {output.ancestral_sequences}
         """
 
 
@@ -450,8 +519,8 @@ rule extract_clades_tsv:
 
 rule subsample_example_sequences:
     input:
-        all_sequences = SEQUENCES,
-        metadata = rules.curate.output.metadata,
+        all_sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
+        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         incl_examples = INCLUDE_EXAMPLES,
@@ -535,4 +604,6 @@ rule clean:
         """
         rm -r results out-dataset test_out dataset.zip tmp
         rm ingest/data/* data/*
+        rm resources/inferred-root.fasta
+        rm -r inferred-root/results/* inferred-root/resources/*
         """

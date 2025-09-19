@@ -17,3 +17,5 @@ KT231897 #B2
 LC629444 #A1
 PV448647 #B3
 OP267515 #B3
+
+#ancestral_sequence

@@ -83,12 +83,12 @@ FEATURES             Location/Qualifiers
      CDS             1684..2388
                      /gene="VP3"
                      /note="capsid protein"
-     CDS             1684..2424
-                     /gene="VP3_new"
-                     /note="capsid protein - corrected annotation"
      CDS             2389..3315
                      /gene="VP1"
                      /note="capsid protein"
+     CDS             1684..2424
+                     /gene="VP3_new"
+                     /note="capsid protein - corrected annotation"
      CDS             2425..3315
                      /gene="VP1_new"
                      /note="capsid protein - corrected annotation"
