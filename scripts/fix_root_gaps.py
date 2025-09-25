@@ -17,12 +17,12 @@ def main():
     root_seq = None
     with open(args.ancestral, 'r') as f:
         for record in SeqIO.parse(f, 'fasta'):
-            if 'NODE_0000' in record.id:
+            if 'NODE_0000000' in record.id:
                 root_seq = record
                 break
     
     if not root_seq:
-        raise ValueError('NODE_0000 not found in ancestral sequences')
+        raise ValueError('NODE_0000000 not found in ancestral sequences')
     
     # Read reference
     with open(args.reference, 'r') as f:

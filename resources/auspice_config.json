@@ -14,6 +14,12 @@
     "nextclade": {
       "ref_nodes": {
         "default": "__root__",
+        "builtins": {
+          "__root__": {
+            "displayName": "Reference [AY426531.1]",
+            "description": "Fermon strain"
+          }
+        },
         "search": [
           {
             "name": "Static ancestral root",

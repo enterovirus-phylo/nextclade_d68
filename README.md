@@ -56,6 +56,9 @@ During the script execution, follow the prompts for CDS annotation selection.
 Edit `pathogen.json` to:
 - Reference your generated files (`reference.fasta`, `genome_annotation.gff3`)
 - Update metadata and QC settings as needed  
+> [!WARNING]  
+> If QC is not set, Nextclade will skip quality checks.
+
 See the [Nextclade pathogen config documentation](https://docs.nextstrain.org/projects/nextclade/en/latest/user/input-files/05-pathogen-config.html) for details.
 
 ---

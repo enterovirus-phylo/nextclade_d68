@@ -15,6 +15,7 @@ Based on the full genome sequence, this dataset uses the Fermon reference sequen
 
 ***Note:** The Fermon reference is substantially diverged from currently circulating strains. This is common for many enterovirus datasets, in contrast to some other virus datasets (e.g., seasonal influenza) where the reference is updated more frequently to match recent sequences.*
 
+To address this, we also provide an **Static ancestral root**: a phylogenetically reconstructed ancestral sequence representative of the diversity in this dataset, which can serve as an alternative reference for analyses and improve interpretation of recent strains.
 
 ## Features
 
