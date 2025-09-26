@@ -26,8 +26,37 @@ INCLUDE_EXAMPLES =      "resources/include_examples.txt"
 REFINE_DROP =           "resources/dropped_refine.txt"
 COLORS =                "resources/colors.tsv"
 COLORS_SCHEMES =        "resources/color_schemes.tsv"
+ANCESTRAL_ROOT =        "resources/inferred-root.fasta"
 
 FETCH_SEQUENCES = True
+ANCESTRAL_ROOT_INFERRENCE = False
+
+onstart:
+    if ANCESTRAL_ROOT_INFERRENCE and not config.get("root_inference_confirmed", False):
+        print(f"""
+        ╔══════════════════════════════════════════════════════════════╗
+        ║                 ENTEROVIRUS ROOT INFERENCE                   ║
+        ║                                                              ║
+        ║  This workflow will infer an ancestral root sequence for     ║
+        ║  your enterovirus dataset and overwrite:                     ║
+        ║  • results/metadata.tsv                                      ║
+        ║  • {SEQUENCES}                                      ║
+        ║                                                              ║
+        ║  To confirm, restart with:                                   ║
+        ║  snakemake -c 9 all --config root_inference_confirmed=true   ║
+        ╚══════════════════════════════════════════════════════════════╝
+        """)
+        sys.exit("Root inference requires confirmation. See message above.")
+
+onsuccess:
+    if ANCESTRAL_ROOT_INFERRENCE:
+        print(f"""
+        • Enterovirus root inference completed successfully!
+        • Updated files:
+           • {ANCESTRAL_ROOT} (ancestral sequence)
+           • results/metadata.tsv (merged metadata)
+           • {SEQUENCES} (combined sequences with ancestral root)
+        """)
 
 rule all:
     input:
@@ -35,6 +64,7 @@ rule all:
         augur_jsons = "test_out/",
         data = "dataset.zip",
         seqs = "results/example_sequences.fasta",
+        **({"root": ANCESTRAL_ROOT} if ANCESTRAL_ROOT_INFERRENCE else {})
 
 
 if FETCH_SEQUENCES == True:
@@ -50,21 +80,6 @@ if FETCH_SEQUENCES == True:
             snakemake --cores 9 all
             cd ../
             """
-
-
-rule add_reference_to_include:
-    """
-    Create an include file for augur filter
-    """
-    input:
-        "resources/include.txt",
-    output:
-        "results/include.txt",
-    shell:
-        """
-        cat {input} >> {output}
-        echo "{REFERENCE_ACCESSION}" >> {output}
-        """
 
 rule curate:
     message:
@@ -91,6 +106,47 @@ rule curate:
         rm metadata.tmp
         """
 
+if ANCESTRAL_ROOT_INFERRENCE == True:
+    rule root_inferrence:
+        message:
+            """
+            Running inferred-root snakefile for inference of the ancestral root. 
+            This reference will be included in the Nextclade reference tree.
+            WARNING: This will overwrite your sequence & meta file!
+            """
+        input:
+            dir = "inferred-root",
+            dataset_path = "dataset",
+            meta = rules.curate.output.metadata,
+            seq = SEQUENCES,
+            meta_ancestral = "resources/static_inferred_root_metadata.tsv",
+        params:
+            strain_id_field = ID_FIELD,
+        output:
+            inref = ANCESTRAL_ROOT,
+            seq = "results/sequences_with_ancestral.fasta",
+            meta = "results/metadata_with_ancestral.tsv",
+        shell:
+            """
+            # Run the inferred-root snakefile
+            echo "Running inferred-root workflow..."
+            cd {input.dir} 
+            snakemake --cores 9 all
+            cd ../
+
+            # Combine sequences (fixed the typo)
+            echo "Combining sequences with ancestral root..."
+            cat {input.seq} {output.inref} > {output.seq}
+
+            # Merge metadata
+            echo "Merging metadata..."
+            augur merge \
+                --metadata metadata={input.meta} ancestral={input.meta_ancestral} \
+                --metadata-id-columns {params.strain_id_field} \
+                --output-metadata {output.meta}
+            
+            echo "Root inference completed successfully!"
+            """
 
 rule index_sequences:
     message:
@@ -98,7 +154,7 @@ rule index_sequences:
         Creating an index of sequence composition for filtering
         """
     input:
-        sequences = SEQUENCES,
+        sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
     output:
         sequence_index = "results/sequence_index.tsv"
     shell:
@@ -108,15 +164,30 @@ rule index_sequences:
             --output {output.sequence_index}
         """
 
+rule add_reference_to_include:
+    """
+    Create an include file for augur filter
+    """
+    input:
+        "resources/include.txt",
+    output:
+        "results/include.txt",
+    shell:
+        """
+        cat {input} >> {output}
+        echo "{REFERENCE_ACCESSION}" >> {output}
+        echo ancestral_sequence >> {output}
+        """
+
 rule filter:
     """
     Exclude sequences from before {MIN_DATE} and subsample to {MAX_SEQS} sequences.
     Only take sequences longer than {MIN_LENGTH}
     """
     input:
-        sequences = SEQUENCES,
+        sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = rules.curate.output.metadata,
+        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
         include = rules.add_reference_to_include.output,
     output:
         filtered_sequences = "results/filtered_sequences_raw.fasta",
@@ -142,7 +213,6 @@ rule filter:
             --output-metadata {output.filtered_metadata}
         """
 
-
 rule align:
     message:
         """
@@ -157,16 +227,15 @@ rule align:
         tsv = "results/nextclade.tsv",
     params:
         translation_template = lambda w: "results/translations/cds_{cds}.translation.fasta",
-        #high-diversity 
-        penalty_gap_extend = 1, #make longer gaps more costly - default is 0
-        penalty_gap_open = 13,  #make gaps more expensive relative to mismatches - default is 13
-        penalty_gap_open_in_frame = 18, #make gaps more expensive relative to mismatches - default is 7
+        penalty_gap_extend = 2, #make longer gaps more costly - default is 0
+        penalty_gap_open = 20,  #make gaps more expensive relative to mismatches - default is 13
+        penalty_gap_open_in_frame = 30, #make gaps more expensive relative to mismatches - default is 7
         penalty_gap_open_out_of_frame = 23, #make out of frame gaps more expensive - default is 8 # prev was 19
-        kmer_length = 6, #reduce to find more matches - default is 10
+        kmer_length = 8, #reduce to find more matches - default is 10
         kmer_distance = 25, #reduce to try more seeds - default is 50
         min_match_length = 30, #reduce to keep more seeds - default is 40
         allowed_mismatches = 15, #increase to keep more seeds - default is 8
-        min_length = 30, # min_length - default is 100
+        min_length = 100, # min_length - default is 100
         #cost of a mutation is 4
     shell:
         """
@@ -227,7 +296,7 @@ rule exclude:
     input:
         sequences = rules.align.output.alignment,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = rules.curate.output.metadata,
+        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         refine = REFINE_DROP,
@@ -314,7 +383,7 @@ rule ancestral:
             --translations {params.translation_template} \
             --output-node-data {output.node_data} \
             --output-translations {params.output_translation_template}\
-            --output-sequences {output.ancestral_sequences} 
+            --output-sequences {output.ancestral_sequences}
         """
 
 
@@ -450,8 +519,8 @@ rule extract_clades_tsv:
 
 rule subsample_example_sequences:
     input:
-        all_sequences = SEQUENCES,
-        metadata = rules.curate.output.metadata,
+        all_sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
+        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         incl_examples = INCLUDE_EXAMPLES,
@@ -535,4 +604,96 @@ rule clean:
         """
         rm -r results out-dataset test_out dataset.zip tmp
         rm ingest/data/* data/*
+        rm resources/inferred-root.fasta
+        rm -r inferred-root/results/* inferred-root/resources/*
         """
+
+rule fragment_testing:
+    input:
+        nextstrain = "testing/nextstrain_d68_vp1.tsv",
+        sequences = SEQUENCES,
+    output:
+        fragments = "testing/EV-D68_fragments.fasta"
+    params:
+        length = range(200, 3000, 100),  # lengths from 200 to 3000
+    run:
+        import os
+        import random
+        from Bio import SeqIO
+        import pandas as pd
+        # Read all sequences from the input file
+        records = list(SeqIO.parse(input.sequences, "fasta"))
+        os.makedirs(os.path.dirname(output.fragments), exist_ok=True)
+
+        # filter records in nextstrain file
+        ns_ids = list(pd.read_csv(input.nextstrain).accession)
+        records = [r for r in records if r.id in ns_ids]
+
+        with open(output.fragments, "w") as out_handle:
+            for length in params.length:
+                record = random.choice(records)
+                seq_len = len(record.seq)
+                while seq_len < length:
+                    record = random.choice(records)
+                    seq_len = len(record.seq)
+                start = random.randint(0, seq_len - length)
+                fragment_seq = record.seq[start:start+length]
+                header = f"{record.id}_partial_{length}"
+                out_handle.write(f">{header}\n{fragment_seq}\n")
+
+
+rule recombinant_testing:
+    input:
+        sequences = SEQUENCES,
+        nextstrain = "testing/nextstrain_d68_vp1.tsv",
+        clades = "results/clades_metadata.tsv",
+        evD_seq = "testing/EV-D_sequence.fasta"
+    output:
+        recombinants = "testing/EV-D68_recombinants.fasta"
+    params:
+        inter_recombinants = 10,
+        intra_recombinants = 10,
+        min_length = 3500,
+    run:
+        import random
+        from Bio import SeqIO
+        import pandas as pd
+
+        def eligible(records, ml):
+            return [r for r in records if len(r) >= ml]
+
+        # Load sequences and filter by Nextstrain IDs & min_length
+        seqs = list(SeqIO.parse(input.sequences, "fasta"))
+        ns_ids = list(pd.read_csv(input.nextstrain, sep="\t").accession)
+        
+        seqs = eligible([r for r in seqs if r.id in ns_ids], params.min_length)
+
+        # Map clade assignments
+        clade_map = pd.read_csv(input.clades, sep="\t").set_index("accession")["clade"].to_dict()
+        clade2seqs = {}
+        for r in seqs:
+            clade = clade_map.get(r.id, "NA")
+            clade2seqs.setdefault(clade, []).append(r)
+        clades = [c for c in clade2seqs if c != "NA" and len(clade2seqs[c]) > 0]
+
+        # EV-D sequences for intertypic recombination
+        evd = eligible(list(SeqIO.parse(input.evD_seq, "fasta")), params.min_length)
+
+        with open(output.recombinants, "w") as out:
+            # Intra-typic: between clades
+            for i in range(params.intra_recombinants):
+                c1, c2 = random.sample(clades, 2)
+                p1, p2 = random.choice(clade2seqs[c1]), random.choice(clade2seqs[c2])
+                minlen = min(len(p1.seq), len(p2.seq))
+                if minlen < params.min_length: continue
+                x = random.randint(1, minlen-1)
+                out.write(f">intra_{p1.id}_{c1}_{p2.id}_{c2}\n{p1.seq[:x]}{p2.seq[x:]}\n")
+
+            # Inter-typic: D68 x EV-D
+            for i in range(params.inter_recombinants):
+                p1 = random.choice(seqs)
+                p2 = random.choice(evd)
+                minlen = min(len(p1.seq), len(p2.seq))
+                if minlen < params.min_length: continue
+                x = random.randint(1, minlen-1)
+                out.write(f">inter_{p1.id}_D68_{p2.id}_D\n{p1.seq[:x]}{p2.seq[x:]}\n")

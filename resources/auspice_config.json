@@ -10,7 +10,49 @@
       "name": "Emma Hodcroft",
       "url": "http://emmahodcroft.com/"
     }
-  ],  "colorings": [
+  ],  "extensions": {
+    "nextclade": {
+      "ref_nodes": {
+        "default": "__root__",
+        "builtins": {
+          "__root__": {
+            "displayName": "Reference [AY426531.1]",
+            "description": "Fermon strain"
+          }
+        },
+        "search": [
+          {
+            "name": "Static ancestral root",
+            "displayName": "Static ancestral root",
+            "description": "Inferred ancestral root [not changing]",
+            "criteria": [
+              {
+                "node": [
+                  {
+                    "name": ["ancestral_sequence"]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Inferred root",
+            "displayName": "Tree root",
+            "description": "Inferred root by Nextclade",
+            "criteria": [
+              {
+                "node": [
+                  {
+                    "name": ["NODE_0000000"]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },  "colorings": [
     {
       "title": "Clade",
       "type": "categorical",
