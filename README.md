@@ -161,6 +161,6 @@ This guide provides a structured, scalable approach to building and using high-q
 ## Task List
 - [x] Integrate ancestral inferred-root into workflow (https://github.com/hodcroftlab/nextclade_d68/pull/2)
 - [x] Validate clade assignment of fragmented sequences in Nextclade (`testing/`)
-- [ ] https://github.com/hodcroftlab/nextclade_d68/issues/3
+- [ ] Ensure novel recombinants get assigned to the root (issue https://github.com/hodcroftlab/nextclade_d68/issues/3)
 - [ ] Review and validate EV-D68 nomenclature, including robustness with recombinant sequences
 - [ ] Integrate epitope mutation information as tree coloring and/or display in the Nextclade results table
