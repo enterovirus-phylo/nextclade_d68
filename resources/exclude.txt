@@ -27,11 +27,6 @@ KU844179
 NC_038308
 AY426531
 
-## accessions not found
-USA/MN/2003-23220aa #dropped because run goes bad if included (usually auto-dropped by refine)
-EV-D68/Homosapiens/USA/O622a/2012aa #dropped because run goes bad if included (usually auto-dropped by refine)
-EV-D68/Homosapiens/USA/U797/2007aa #dropped because run goes bad if included (usually auto-dropped by refine)
-
 ## recombinant
 KM892499
 KP455263

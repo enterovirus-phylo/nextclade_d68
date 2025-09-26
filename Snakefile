@@ -29,7 +29,7 @@ COLORS_SCHEMES =        "resources/color_schemes.tsv"
 ANCESTRAL_ROOT =        "resources/inferred-root.fasta"
 
 FETCH_SEQUENCES = True
-ANCESTRAL_ROOT_INFERRENCE = True
+ANCESTRAL_ROOT_INFERRENCE = False
 
 onstart:
     if ANCESTRAL_ROOT_INFERRENCE and not config.get("root_inference_confirmed", False):
@@ -607,3 +607,93 @@ rule clean:
         rm resources/inferred-root.fasta
         rm -r inferred-root/results/* inferred-root/resources/*
         """
+
+rule fragment_testing:
+    input:
+        nextstrain = "testing/nextstrain_d68_vp1.tsv",
+        sequences = SEQUENCES,
+    output:
+        fragments = "testing/EV-D68_fragments.fasta"
+    params:
+        length = range(200, 3000, 100),  # lengths from 200 to 3000
+    run:
+        import os
+        import random
+        from Bio import SeqIO
+        import pandas as pd
+        # Read all sequences from the input file
+        records = list(SeqIO.parse(input.sequences, "fasta"))
+        os.makedirs(os.path.dirname(output.fragments), exist_ok=True)
+
+        # filter records in nextstrain file
+        ns_ids = list(pd.read_csv(input.nextstrain).accession)
+        records = [r for r in records if r.id in ns_ids]
+
+        with open(output.fragments, "w") as out_handle:
+            for length in params.length:
+                record = random.choice(records)
+                seq_len = len(record.seq)
+                while seq_len < length:
+                    record = random.choice(records)
+                    seq_len = len(record.seq)
+                start = random.randint(0, seq_len - length)
+                fragment_seq = record.seq[start:start+length]
+                header = f"{record.id}_partial_{length}"
+                out_handle.write(f">{header}\n{fragment_seq}\n")
+
+
+rule recombinant_testing:
+    input:
+        sequences = SEQUENCES,
+        nextstrain = "testing/nextstrain_d68_vp1.tsv",
+        clades = "results/clades_metadata.tsv",
+        evD_seq = "testing/EV-D_sequence.fasta"
+    output:
+        recombinants = "testing/EV-D68_recombinants.fasta"
+    params:
+        inter_recombinants = 10,
+        intra_recombinants = 10,
+        min_length = 3500,
+    run:
+        import random
+        from Bio import SeqIO
+        import pandas as pd
+
+        def eligible(records, ml):
+            return [r for r in records if len(r) >= ml]
+
+        # Load sequences and filter by Nextstrain IDs & min_length
+        seqs = list(SeqIO.parse(input.sequences, "fasta"))
+        ns_ids = list(pd.read_csv(input.nextstrain, sep="\t").accession)
+        
+        seqs = eligible([r for r in seqs if r.id in ns_ids], params.min_length)
+
+        # Map clade assignments
+        clade_map = pd.read_csv(input.clades, sep="\t").set_index("accession")["clade"].to_dict()
+        clade2seqs = {}
+        for r in seqs:
+            clade = clade_map.get(r.id, "NA")
+            clade2seqs.setdefault(clade, []).append(r)
+        clades = [c for c in clade2seqs if c != "NA" and len(clade2seqs[c]) > 0]
+
+        # EV-D sequences for intertypic recombination
+        evd = eligible(list(SeqIO.parse(input.evD_seq, "fasta")), params.min_length)
+
+        with open(output.recombinants, "w") as out:
+            # Intra-typic: between clades
+            for i in range(params.intra_recombinants):
+                c1, c2 = random.sample(clades, 2)
+                p1, p2 = random.choice(clade2seqs[c1]), random.choice(clade2seqs[c2])
+                minlen = min(len(p1.seq), len(p2.seq))
+                if minlen < params.min_length: continue
+                x = random.randint(1, minlen-1)
+                out.write(f">intra_{p1.id}_{c1}_{p2.id}_{c2}\n{p1.seq[:x]}{p2.seq[x:]}\n")
+
+            # Inter-typic: D68 x EV-D
+            for i in range(params.inter_recombinants):
+                p1 = random.choice(seqs)
+                p2 = random.choice(evd)
+                minlen = min(len(p1.seq), len(p2.seq))
+                if minlen < params.min_length: continue
+                x = random.randint(1, minlen-1)
+                out.write(f">inter_{p1.id}_D68_{p2.id}_D\n{p1.seq[:x]}{p2.seq[x:]}\n")
