@@ -5,7 +5,7 @@ GENES =                 ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B
 ALLOWED_DIVERGENCE =    "1000" # was 
 MIN_DATE =              "1990-01-01"
 MIN_LENGTH =            "6000" # was 6000 for whole genome build on Nextstrain
-MAX_SEQS =              "1000" #TODO: set to 10000 for testing
+MAX_SEQS =              "1200" #TODO: set to 10000 for testing
 ROOTING =               "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
 ID_FIELD=               "accession" # either accession or strain, used for meta-id-column in augur
 
@@ -29,7 +29,7 @@ COLORS_SCHEMES =        "resources/color_schemes.tsv"
 ANCESTRAL_ROOT =        "resources/inferred-root.fasta"
 
 FETCH_SEQUENCES = True
-ANCESTRAL_ROOT_INFERRENCE = False
+ANCESTRAL_ROOT_INFERRENCE = True
 
 onstart:
     if ANCESTRAL_ROOT_INFERRENCE and not config.get("root_inference_confirmed", False):
@@ -227,14 +227,14 @@ rule align:
         tsv = "results/nextclade.tsv",
     params:
         translation_template = lambda w: "results/translations/cds_{cds}.translation.fasta",
-        penalty_gap_extend = 2, #make longer gaps more costly - default is 0
-        penalty_gap_open = 20,  #make gaps more expensive relative to mismatches - default is 13
-        penalty_gap_open_in_frame = 30, #make gaps more expensive relative to mismatches - default is 7
-        penalty_gap_open_out_of_frame = 23, #make out of frame gaps more expensive - default is 8 # prev was 19
-        kmer_length = 8, #reduce to find more matches - default is 10
-        kmer_distance = 25, #reduce to try more seeds - default is 50
-        min_match_length = 30, #reduce to keep more seeds - default is 40
-        allowed_mismatches = 15, #increase to keep more seeds - default is 8
+        penalty_gap_extend = 3, #make longer gaps more costly - default is 0
+        penalty_gap_open = 16,  #make gaps more expensive relative to mismatches - default is 13
+        penalty_gap_open_in_frame = 7, #make gaps more expensive relative to mismatches - default is 7
+        penalty_gap_open_out_of_frame = 30, #make out of frame gaps more expensive - default is 8 # prev was 19
+        kmer_length = 6, #reduce to find more matches - default is 10
+        kmer_distance = 15, #reduce to try more seeds - default is 50
+        min_match_length = 25, #reduce to keep more seeds - default is 40
+        allowed_mismatches = 10, #increase to keep more seeds - default is 8
         min_length = 100, # min_length - default is 100
         #cost of a mutation is 4
     shell:
@@ -244,20 +244,25 @@ rule align:
         {input.sequences} \
         --input-ref {input.reference} \
         --input-annotation {input.annotation} \
+        --alignment-preset high-diversity \
         --penalty-gap-open {params.penalty_gap_open} \
         --penalty-gap-extend {params.penalty_gap_extend} \
         --penalty-gap-open-in-frame {params.penalty_gap_open_in_frame} \
         --penalty-gap-open-out-of-frame {params.penalty_gap_open_out_of_frame} \
+        --gap-alignment-side right \
         --kmer-length {params.kmer_length} \
         --kmer-distance {params.kmer_distance} \
         --min-match-length {params.min_match_length} \
         --allowed-mismatches {params.allowed_mismatches} \
         --min-length {params.min_length} \
+        --max-alignment-attempts 5 \
         --include-reference false \
         --output-tsv {output.tsv} \
         --output-translations {params.translation_template} \
         --output-fasta {output.alignment} 
         """
+        #         --penalty-mismatch 
+
 
 
 rule get_outliers:
@@ -387,20 +392,6 @@ rule ancestral:
         """
 
 
-rule dummy_clades:
-    """
-    Nextclade requires clade membership to be specified for each node
-    in the tree. This rule creates a dummy clade membership for each node
-    """
-    input:
-        rules.refine.output.node_data,
-    output:
-        "results/dummy_clades.json",
-    shell:
-        """
-        jq '.nodes |= map_values({{"clade_membership": "dummy"}})' {input} > {output}
-        """
-
 rule clades:
     input:
         tree = rules.refine.output.tree,
@@ -444,6 +435,72 @@ rule get_dates:
 
         result_df.to_csv(output.ordering, sep='\t', index=False, header=False)
         
+rule epitopes:
+    input:
+        anc_seqs = rules.ancestral.output.node_data,
+        tree = rules.refine.output.tree,
+        translation = "results/translations/cds_VP1.ancestral.fasta",
+    output:
+        node_data = "results/epitopes.json"
+    params:
+        # Original VP1-relative epitope positions (amino acids)
+        epitopes = {
+            'BC': [90, 92, 95, 97, 98, 103], 
+            'DE': [140, 141, 142, 143, 144, 145, 146, 147, 148],
+            'CTERM': [280, 283, 284, 288, 290, 297, 299, 301, 304, 305, 306, 308]
+        },
+        min_count = 4,  # Minimum count to keep a specific epitope sequence
+    run:
+        import json
+        from collections import defaultdict
+        from augur.translate import safe_translate
+        from Bio import Phylo
+        from Bio import SeqIO
+        import ipdb
+
+        manyXList = ["XXXXXXXXXXXX", "KEXXXXXXXXXX", "KERANXXXXXXX", "KERXXXXXXXXX", "KERAXXXXXXXX"]
+        
+        # with open(input.anc_seqs) as fh:
+        #     anc = json.load(fh)["nodes"]
+
+        # Read translation files
+        vp1_anc = SeqIO.to_dict(SeqIO.parse(input.translation, "fasta"))
+
+        T = Phylo.read(input.tree, 'newick')
+        for node in T.find_clades(order='preorder'):
+            for child in node:
+                child.parent = node
+
+        nodes = {}
+        epitope_counts = {epi: defaultdict(int) for epi in params.epitopes}
+        
+
+        for node in T.find_clades(order='preorder'):
+            # ipdb.set_trace()
+            n = node.name
+            aa = vp1_anc[n].seq
+            nodes[n] = {}
+            for epi, pos in params.epitopes.items():
+                pos = [p - 1 for p in pos]  # Convert to 0-based indexing
+                nodes[n][epi] = "".join([aa[p] for p in pos])
+                if epi == 'CTERM':
+                    if nodes[n]['CTERM'] in manyXList:
+                        nodes[n]['CTERM'] = "many x"
+                    elif 'X' in nodes[n]['CTERM']:
+                        nodes[n]['CTERM'] = nodes[node.parent.name]['CTERM']
+                if not n.startswith('NODE_'):
+                    epitope_counts[epi][nodes[n][epi]] += 1
+
+        for node in nodes:
+            for epi, seq in nodes[node].items():
+                min_count2 = params.min_count if epi != "CTERM" else 6
+                if epi == "CTERM" and seq in manyXList:
+                    nodes[node][epi] = 'many X'
+                elif epitope_counts[epi][seq] < min_count2:
+                    nodes[node][epi] = 'other'
+
+        with open(output.node_data, 'w') as fh:
+            json.dump({"epitopes": params.epitopes, "nodes": nodes}, fh)
 
 rule colors:
     """Assign colors based on ordering"""
@@ -474,7 +531,8 @@ rule export:
         branch_lengths = rules.refine.output.node_data,
         clades = rules.clades.output.json, # dummy_clades if not set yet
         auspice_config = AUSPICE_CONFIG,
-        colors = rules.colors.output.final_colors
+        colors = rules.colors.output.final_colors,
+        epitopes = rules.epitopes.output.node_data,
     params:
         strain_id_field = ID_FIELD,
         fields="region country date",
@@ -489,7 +547,7 @@ rule export:
             --auspice-config {input.auspice_config} \
             --color-by-metadata {params.fields} \
             --colors {input.colors} \
-            --node-data {input.mutations} {input.branch_lengths} {input.clades} \
+            --node-data {input.mutations} {input.branch_lengths} {input.clades} {input.epitopes}\
             --output {output.auspice}
         """
 
@@ -687,7 +745,7 @@ rule recombinant_testing:
                 minlen = min(len(p1.seq), len(p2.seq))
                 if minlen < params.min_length: continue
                 x = random.randint(1, minlen-1)
-                out.write(f">intra_{p1.id}_{c1}_{p2.id}_{c2}\n{p1.seq[:x]}{p2.seq[x:]}\n")
+                out.write(f">intra_{p1.id}_{c1}_{x}_{p2.id}_{c2}\n{p1.seq[:x]}{p2.seq[x:]}\n")
 
             # Inter-typic: D68 x EV-D
             for i in range(params.inter_recombinants):
@@ -696,4 +754,4 @@ rule recombinant_testing:
                 minlen = min(len(p1.seq), len(p2.seq))
                 if minlen < params.min_length: continue
                 x = random.randint(1, minlen-1)
-                out.write(f">inter_{p1.id}_D68_{p2.id}_D\n{p1.seq[:x]}{p2.seq[x:]}\n")
+                out.write(f">inter_{p1.id}_D68_{x}_{p2.id}_D\n{p1.seq[:x]}{p2.seq[x:]}\n")
