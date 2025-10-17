@@ -18,12 +18,12 @@ EXCLUDE =               "../resources/exclude.txt"
 SEQUENCES =             "../data/sequences.fasta"
 METADATA =              "../results/metadata.tsv"
 INCLUDE =               "../resources/include.txt"
-ANCESTRAL_ROOT =        "resources/inferred-root.fasta"
+INFERRED_ANCESTOR =      "resources/inferred-root.fasta"
 
 
 rule all:
     input:
-        seqs = ANCESTRAL_ROOT
+        seqs = INFERRED_ANCESTOR
     shell:
         """
         cp {input.seqs} ../{input.seqs}
@@ -180,7 +180,7 @@ rule ancestral:
     output:
         node_data="results/muts.json",
         ancestral_sequences="results/ancestral_sequences.fasta",
-        # root = ANCESTRAL_ROOT
+        # root = INFERRED_ANCESTOR
     params:
         translation_template=r"results/translations/cds_%GENE.translation.fasta",
         output_translation_template=r"results/translations/cds_%GENE.ancestral.fasta",
@@ -204,7 +204,7 @@ rule extract_root:
         ancestral_sequences = rules.ancestral.output.ancestral_sequences,
         reference = REFERENCE_PATH,
     output:
-        root = ANCESTRAL_ROOT
+        root = INFERRED_ANCESTOR
     shell:
         """
         python3 ../scripts/fix_root_gaps.py \
