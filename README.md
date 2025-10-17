@@ -105,7 +105,7 @@ The `inferred-root/` directory contains a self-contained pipeline to infer a dat
 > [!NOTE]  
 > To skip the inferred root step, leave `ANCESTRAL_ROOT_INFERRENCE = False`.
 
-**Template for other enteroviruses:**  
+### **Template for other enteroviruses:**  
 If you want to apply this approach to other enterovirus types (e.g., EV-A71, CVA16), a [Nextclade Dataset Template for Inferred Root](https://github.com/enterovirus-phylo/dataset-template-inferred-root) is available and recommended for reuse.
 
 ---
@@ -123,8 +123,11 @@ This will:
 - Run Nextclade on the example sequences in `out-dataset/sequences.fasta`
 - Output results to `test_out/` (alignment, translations, summary TSV)
 
----
 
+### Labeling Mutations of Interest
+To label mutations of interest, execute the `mutLabels` rule as a standalone instance. They will be added to the `out-dataset/pathogen.json` file.
+
+---
 ## Visualizing Your Custom Nextclade Dataset
 
 To use the dataset in Nextclade Web, serve it locally:
