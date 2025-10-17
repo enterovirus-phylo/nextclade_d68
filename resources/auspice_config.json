@@ -12,6 +12,8 @@
     }
   ],  "extensions": {
     "nextclade": {
+      "clade_node_attrs": [
+      ],
       "ref_nodes": {
         "default": "__root__",
         "builtins": {
@@ -22,9 +24,9 @@
         },
         "search": [
           {
-            "name": "Static ancestral root",
-            "displayName": "Static ancestral root",
-            "description": "Inferred ancestral root [not changing]",
+            "name": "InferredAncestor",
+            "displayName": "Static Inferred Ancestor",
+            "description": "Precomputed ancestral sequence (static)",
             "criteria": [
               {
                 "node": [
@@ -38,7 +40,7 @@
           {
             "name": "Inferred root",
             "displayName": "Tree root",
-            "description": "Inferred root by Nextclade",
+            "description": "Inferred ancestral root (regenerated on each run)",
             "criteria": [
               {
                 "node": [
@@ -79,7 +81,7 @@
       "key": "BC"
     },
     {
-      "title": "Epitope at DE loop (Pos 140,141,142,143,144,145,146,149)",
+      "title": "Epitope at DE loop (Pos 140-148)",
       "type": "categorical",
       "key": "DE"
     },
@@ -94,22 +96,21 @@
     "country", "region"
   ],
   "filters": [
+    "new_node",
+    "clade_membership",
     "country",
-    "region",
-    "clade_membership"
+    "region"
   ],
   "display_defaults": {
     "color_by": "clade_membership",
-    "geo_resolution": "country",
+    "distance_measure": "div",
     "tip_label": "strain",
-    "map_triplicate": true
+    "branch_label": "clade",
+    "map_triplicate": false,
+    "transmission_lines": false
   },
   "metadata_columns": [
     "strain"
   ],
-  "panels": [
-    "tree",
-    "map",
-    "entropy"
-  ]
+  "panels": ["tree","entropy"]
 }
