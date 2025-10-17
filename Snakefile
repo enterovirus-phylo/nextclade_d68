@@ -26,13 +26,14 @@ INCLUDE_EXAMPLES =      "resources/include_examples.txt"
 REFINE_DROP =           "resources/dropped_refine.txt"
 COLORS =                "resources/colors.tsv"
 COLORS_SCHEMES =        "resources/color_schemes.tsv"
-ANCESTRAL_ROOT =        "resources/inferred-root.fasta"
+INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
 
 FETCH_SEQUENCES = True
-ANCESTRAL_ROOT_INFERRENCE = True
+STATIC_ANCESTRAL_INFERRENCE = True
+configfile: "config.yaml"
 
 onstart:
-    if ANCESTRAL_ROOT_INFERRENCE and not config.get("root_inference_confirmed", False):
+    if STATIC_ANCESTRAL_INFERRENCE and not config.get("static_inference_confirmed", False):
         print(f"""
         ╔══════════════════════════════════════════════════════════════╗
         ║                 ENTEROVIRUS ROOT INFERENCE                   ║
@@ -43,20 +44,24 @@ onstart:
         ║  • {SEQUENCES}                                      ║
         ║                                                              ║
         ║  To confirm, restart with:                                   ║
-        ║  snakemake -c 9 all --config root_inference_confirmed=true   ║
+        ║  snakemake -c 9 all --config static_inference_confirmed=true ║
         ╚══════════════════════════════════════════════════════════════╝
         """)
         sys.exit("Root inference requires confirmation. See message above.")
 
 onsuccess:
-    if ANCESTRAL_ROOT_INFERRENCE:
+    if STATIC_ANCESTRAL_INFERRENCE:
         print(f"""
-        • Enterovirus root inference completed successfully!
-        • Updated files:
-           • {ANCESTRAL_ROOT} (ancestral sequence)
+        Enterovirus root inference completed successfully!
+        Updated files:
+           • {INFERRED_ANCESTOR} (ancestral sequence)
            • results/metadata.tsv (merged metadata)
            • {SEQUENCES} (combined sequences with ancestral root)
         """)
+    else: print("Workflow finished, no ancestral root created.")
+
+onerror:
+    print("An error occurred. See detailed error message in terminal.")
 
 rule all:
     input:
@@ -64,7 +69,12 @@ rule all:
         augur_jsons = "test_out/",
         data = "dataset.zip",
         seqs = "results/example_sequences.fasta",
-        **({"root": ANCESTRAL_ROOT} if ANCESTRAL_ROOT_INFERRENCE else {})
+        **({"root": INFERRED_ANCESTOR} if STATIC_ANCESTRAL_INFERRENCE else {})
+
+rule testing:
+    input:
+        "testing/EV-D68_fragments.fasta",
+        "testing/EV-D68_recombinants.fasta"
 
 
 if FETCH_SEQUENCES == True:
@@ -106,11 +116,11 @@ rule curate:
         rm metadata.tmp
         """
 
-if ANCESTRAL_ROOT_INFERRENCE == True:
-    rule root_inferrence:
+if STATIC_ANCESTRAL_INFERRENCE == True:
+    rule static_inferrence:
         message:
             """
-            Running inferred-root snakefile for inference of the ancestral root. 
+            Running "inferred-root" snakefile for inference of the ancestral root. 
             This reference will be included in the Nextclade reference tree.
             WARNING: This will overwrite your sequence & meta file!
             """
@@ -119,11 +129,11 @@ if ANCESTRAL_ROOT_INFERRENCE == True:
             dataset_path = "dataset",
             meta = rules.curate.output.metadata,
             seq = SEQUENCES,
-            meta_ancestral = "resources/static_inferred_root_metadata.tsv",
+            meta_ancestral = "resources/static_inferred_metadata.tsv",
         params:
             strain_id_field = ID_FIELD,
         output:
-            inref = ANCESTRAL_ROOT,
+            inref = INFERRED_ANCESTOR,
             seq = "results/sequences_with_ancestral.fasta",
             meta = "results/metadata_with_ancestral.tsv",
         shell:
@@ -145,7 +155,7 @@ if ANCESTRAL_ROOT_INFERRENCE == True:
                 --metadata-id-columns {params.strain_id_field} \
                 --output-metadata {output.meta}
             
-            echo "Root inference completed successfully!"
+            echo "Static ancestral inference completed successfully!"
             """
 
 rule index_sequences:
@@ -154,7 +164,7 @@ rule index_sequences:
         Creating an index of sequence composition for filtering
         """
     input:
-        sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
+        sequences = "results/sequences_with_ancestral.fasta" if STATIC_ANCESTRAL_INFERRENCE else SEQUENCES,
     output:
         sequence_index = "results/sequence_index.tsv"
     shell:
@@ -185,9 +195,9 @@ rule filter:
     Only take sequences longer than {MIN_LENGTH}
     """
     input:
-        sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
+        sequences = "results/sequences_with_ancestral.fasta" if STATIC_ANCESTRAL_INFERRENCE else SEQUENCES,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
+        metadata = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else rules.curate.output.metadata,
         include = rules.add_reference_to_include.output,
     output:
         filtered_sequences = "results/filtered_sequences_raw.fasta",
@@ -236,7 +246,7 @@ rule align:
         min_match_length = 25, #reduce to keep more seeds - default is 40
         allowed_mismatches = 10, #increase to keep more seeds - default is 8
         min_length = 100, # min_length - default is 100
-        #cost of a mutation is 4
+        gap_alignment_side = "right", # default is left
     shell:
         """
         nextclade3 run \
@@ -249,7 +259,7 @@ rule align:
         --penalty-gap-extend {params.penalty_gap_extend} \
         --penalty-gap-open-in-frame {params.penalty_gap_open_in_frame} \
         --penalty-gap-open-out-of-frame {params.penalty_gap_open_out_of_frame} \
-        --gap-alignment-side right \
+        --gap-alignment-side {params.gap_alignment_side} \
         --kmer-length {params.kmer_length} \
         --kmer-distance {params.kmer_distance} \
         --min-match-length {params.min_match_length} \
@@ -301,7 +311,7 @@ rule exclude:
     input:
         sequences = rules.align.output.alignment,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
+        metadata = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         refine = REFINE_DROP,
@@ -439,10 +449,10 @@ rule epitopes:
     input:
         anc_seqs = rules.ancestral.output.node_data,
         tree = rules.refine.output.tree,
-        translation = "results/translations/cds_VP1.ancestral.fasta",
     output:
         node_data = "results/epitopes.json"
     params:
+        translation = "results/translations/cds_VP1.ancestral.fasta",
         # Original VP1-relative epitope positions (amino acids)
         epitopes = {
             'BC': [90, 92, 95, 97, 98, 103], 
@@ -464,7 +474,7 @@ rule epitopes:
         #     anc = json.load(fh)["nodes"]
 
         # Read translation files
-        vp1_anc = SeqIO.to_dict(SeqIO.parse(input.translation, "fasta"))
+        vp1_anc = SeqIO.to_dict(SeqIO.parse(params.translation, "fasta"))
 
         T = Phylo.read(input.tree, 'newick')
         for node in T.find_clades(order='preorder'):
@@ -577,8 +587,8 @@ rule extract_clades_tsv:
 
 rule subsample_example_sequences:
     input:
-        all_sequences = "results/sequences_with_ancestral.fasta" if ANCESTRAL_ROOT_INFERRENCE else SEQUENCES,
-        metadata = "results/metadata_with_ancestral.tsv" if ANCESTRAL_ROOT_INFERRENCE else rules.curate.output.metadata,
+        all_sequences = "results/sequences_with_ancestral.fasta" if STATIC_ANCESTRAL_INFERRENCE else SEQUENCES,
+        metadata = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         incl_examples = INCLUDE_EXAMPLES,
@@ -657,6 +667,24 @@ rule test:
             {input.sequences}
         """
 
+rule mutLabels:
+    input: 
+        json = PATHOGEN_JSON,
+        tsv = "test_out/nextclade.tsv",
+    params:
+        "results/virus_properties.json"
+    output:
+        "out-dataset/pathogen.json"
+    shell:
+        """
+        python3 scripts/generate_virus_properties.py
+        jq --slurpfile v {params} \
+           '.mutLabels.nucMutLabelMap = $v[0].nucMutLabelMap |
+            .mutLabels.nucMutLabelMapReverse = $v[0].nucMutLabelMapReverse' \
+           {input.json} > {output}
+        zip -rj dataset.zip  out-dataset/*
+        """
+
 rule clean:
     shell:
         """
@@ -669,16 +697,18 @@ rule clean:
 rule fragment_testing:
     input:
         nextstrain = "testing/nextstrain_d68_vp1.tsv",
-        sequences = SEQUENCES,
+        sequences = "results/aligned.fasta",
     output:
         fragments = "testing/EV-D68_fragments.fasta"
     params:
-        length = range(200, 3000, 100),  # lengths from 200 to 3000
+        length = range(100, 3000, 100),  # lengths from 200 to 3000
+        gene = ["VP1", "3D"]  # genes to sample from; atm only VP1 and 3D supported
     run:
         import os
         import random
         from Bio import SeqIO
         import pandas as pd
+
         # Read all sequences from the input file
         records = list(SeqIO.parse(input.sequences, "fasta"))
         os.makedirs(os.path.dirname(output.fragments), exist_ok=True)
@@ -691,6 +721,26 @@ rule fragment_testing:
             for length in params.length:
                 record = random.choice(records)
                 seq_len = len(record.seq)
+                if "VP1" in params.gene or "3D" in params.gene:
+                    if "VP1" in params.gene: 
+                        seq1 = record.seq[2389:3315]
+                        l = len(seq1) - seq1.count("-") - seq1.count("N")
+                        if l > length:
+                            s = random.randint(0, l - length)
+                            seq1 = seq1[s:s+length]
+                            header = f"{record.id}_partial_{length}_VP1"
+                            out_handle.write(f">{header}\n{seq1}\n")
+                    if "3D" in params.gene:
+                        seq2 = record.seq[5926:7296]
+                        l = len(seq2)
+                        if l > length:
+                            s = random.randint(0, l - length)
+                            seq2 = seq2[s:s+length]
+                            header = f"{record.id}_partial_{length}_3D"
+                            out_handle.write(f">{header}\n{seq2}\n")
+                else: 
+                    print(f"Gene {params.gene} not recognized.")
+                        
                 while seq_len < length:
                     record = random.choice(records)
                     seq_len = len(record.seq)

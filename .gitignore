@@ -1,6 +1,9 @@
 ## add your work email
 .env
 
+# run inference
+config.yaml
+
 # will be downloaded with ingest
 data/metadata.tsv
 data/sequences.fasta
