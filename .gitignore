@@ -22,3 +22,5 @@ results
 out-dataset
 dataset.zip
 test_out
+
+testing/*

@@ -69,6 +69,7 @@ rule all:
         augur_jsons = "test_out/",
         data = "dataset.zip",
         seqs = "results/example_sequences.fasta",
+        json = "out-dataset/pathogen.json",
         **({"root": INFERRED_ANCESTOR} if STATIC_ANCESTRAL_INFERRENCE else {})
 
 rule testing:
@@ -631,12 +632,13 @@ rule assemble_dataset:
         pathogen = PATHOGEN_JSON,
         readme = README_PATH,
         changelog = CHANGELOG_PATH,
+    params:
+        pathogen = "out-dataset/pathogen.json",
     output:
         tree = "out-dataset/tree.json",
         reference = "out-dataset/reference.fasta",
         annotation = "out-dataset/genome_annotation.gff3",
         sequences = "out-dataset/sequences.fasta",
-        pathogen = "out-dataset/pathogen.json",
         readme = "out-dataset/README.md",
         changelog = "out-dataset/CHANGELOG.md",
         dataset_zip = "dataset.zip",
@@ -646,7 +648,7 @@ rule assemble_dataset:
         cp {input.reference} {output.reference}
         cp {input.annotation} {output.annotation}
         cp {input.sequences} {output.sequences}
-        cp {input.pathogen} {output.pathogen}
+        cp {input.pathogen} {params.pathogen}
         cp {input.readme} {output.readme}
         cp {input.changelog} {output.changelog}
         zip -rj dataset.zip  out-dataset/*
@@ -668,7 +670,8 @@ rule test:
         """
 
 rule mutLabels:
-    input: 
+    input:
+        d = directory("test_out"),
         json = PATHOGEN_JSON,
         tsv = "test_out/nextclade.tsv",
     params:

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/nextstrain/nextclade/refs/heads/release/packages/nextclade-schemas/input-pathogen-json.schema.json",
   "schemaVersion": "3.0.0",
   "files": {
     "reference": "reference.fasta",
@@ -37,15 +38,14 @@
     }
   },
   "qc": {
-    "schemaVersion": "1.2.0",
     "frameShifts": {
       "enabled": true,
       "scoreWeight": 100
     },
     "missingData": {
       "enabled": true,
-      "missingDataThreshold": 500,
-      "scoreBias": 1000
+      "missingDataThreshold": 200,
+      "scoreBias": 2400
     },
     "mixedSites": {
       "enabled": true,
@@ -53,11 +53,11 @@
     },
     "privateMutations": {
       "enabled": true,
-      "cutoff": 100,
+      "cutoff": 120,
       "typical": 50,
-      "weightLabeledSubstitutions": 1,
+      "weightLabeledSubstitutions": 1.5,
       "weightReversionSubstitutions": 2,
-      "weightUnlabeledSubstitutions": 2
+      "weightUnlabeledSubstitutions": 1
     },
     "divergence": {
       "enabled": true,
@@ -67,8 +67,24 @@
     "stopCodons": {
       "enabled": true,
       "scoreWeight": 40
+    },
+    "recombinants": {
+      "enabled": true,
+      "mutationsThreshold": 140,
+      "scoreWeight": 50
     }
     },
-  "cdsOrderPreference":["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
-
-}
+    "cdsOrderPreference": [
+      "VP4",
+      "VP2",
+      "VP3",
+      "VP1",
+      "2A",
+      "2B",
+      "2C",
+      "3A",
+      "3B",
+      "3C",
+      "3D"
+    ]
+  }
