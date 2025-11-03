@@ -2,7 +2,7 @@
 
 | Key                  | Value                                                                 |
 |----------------------|-----------------------------------------------------------------------|
-| authors              | [Nadia Neuner-Jehle](https://www.swisstph.ch/en/staff/profile/people/nadia-neuner-jehle), Alejandra González-Sánchez, [Emma B. Hodcroft](http://emmahodcroft.com/), [ENPEN](https://escv.eu/european-non-polio-enterovirus-network-enpen/)                                                 |
+| authors              | [Nadia Neuner-Jehle](https://www.swisstph.ch/en/staff/profile/people/nadia-neuner-jehle), [Alejandra González-Sánchez](https://github.com/alejandra-gonzalezsanchez), [Emma B. Hodcroft](http://emmahodcroft.com/), [ENPEN](https://escv.eu/european-non-polio-enterovirus-network-enpen/)                                                 |
 | name                 | Enterovirus D68                                                       |
 | reference            | [AY426531.1](https://www.ncbi.nlm.nih.gov/nuccore/AY426531.1)         |
 | workflow             | https://github.com/enterovirus-phylo/nextclade_d68                    |
