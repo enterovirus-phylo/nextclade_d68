@@ -10,20 +10,21 @@ ROOTING =               "mid_point"  # alternative root using outgroup, e.g. the
 ID_FIELD=               "accession" # either accession or strain, used for meta-id-column in augur
 
 # Set the paths
-GFF_PATH =              "dataset/genome_annotation.gff3"
-PATHOGEN_JSON =         "dataset/pathogen.json"
-GENBANK_PATH =          "resources/reference.gbk"
-REFERENCE_PATH =        "dataset/reference.fasta"
-README_PATH =           "dataset/README.md"
-CHANGELOG_PATH =        "dataset/CHANGELOG.md"
-AUSPICE_CONFIG =        "resources/auspice_config.json"
-EXCLUDE =               "resources/exclude.txt"
 SEQUENCES =             "data/sequences.fasta"
 METADATA =              "data/metadata.tsv"
+
+GFF_PATH =              "dataset/genome_annotation.gff3" 
+PATHOGEN_JSON =         "dataset/pathogen.json"
+README_PATH =           "dataset/README.md"
+CHANGELOG_PATH =        "dataset/CHANGELOG.md"
+REFERENCE_PATH =        "dataset/reference.fasta"
+
+GENBANK_PATH =          "resources/reference.gbk"
+AUSPICE_CONFIG =        "resources/auspice_config.json"
+EXCLUDE =               "resources/exclude.txt"
 CLADES =                "resources/clades.tsv"
 ACCESSION_STRAIN =      "resources/accession_strain.tsv"
 INCLUDE_EXAMPLES =      "resources/include_examples.txt"
-REFINE_DROP =           "resources/dropped_refine.txt"
 COLORS =                "resources/colors.tsv"
 COLORS_SCHEMES =        "resources/color_schemes.tsv"
 INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
@@ -315,7 +316,6 @@ rule exclude:
         metadata = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else rules.curate.output.metadata,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
-        refine = REFINE_DROP,
         example = INCLUDE_EXAMPLES,
 
     params:
@@ -331,7 +331,7 @@ rule exclude:
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id_field} \
-            --exclude {input.exclude} {input.outliers} {input.refine} {input.example} \
+            --exclude {input.exclude} {input.outliers} {input.example} \
             --output-sequences {output.filtered_sequences} \
             --output-metadata {output.filtered_metadata} \
             --output-strains {output.strains}
@@ -595,7 +595,6 @@ rule subsample_example_sequences:
         incl_examples = INCLUDE_EXAMPLES,
         clades =  rules.extract_clades_tsv.output.tsv,
         tree_strains = "results/tree_strains.txt",  # strains in the tree
-        refine = REFINE_DROP,
     output:
         example_sequences = "results/example_sequences.fasta",
     params:
@@ -612,7 +611,7 @@ rule subsample_example_sequences:
             --metadata-id-columns {params.strain_id_field} \
             --min-length 4000 \
             --include {input.incl_examples} \
-            --exclude {input.exclude} {input.outliers} {input.refine} \
+            --exclude {input.exclude} {input.outliers} \
             --exclude-ambiguous-dates-by year \
             --min-date 2012 --group-by clade \
             --subsample-max-sequences 15  \
@@ -673,9 +672,8 @@ rule mutLabels:
     input:
         d = directory("test_out"),
         json = PATHOGEN_JSON,
-        tsv = "test_out/nextclade.tsv",
     params:
-        "results/virus_properties.json"
+        "results/virus_properties.json",
     output:
         "out-dataset/pathogen.json"
     shell:
@@ -694,7 +692,7 @@ rule clean:
         rm -r results out-dataset test_out dataset.zip tmp
         rm ingest/data/* data/*
         rm resources/inferred-root.fasta
-        rm -r inferred-root/results/* inferred-root/resources/*
+        # rm -r inferred-root/results/* inferred-root/resources/*
         """
 
 rule fragment_testing:

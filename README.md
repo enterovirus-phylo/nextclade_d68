@@ -149,7 +149,7 @@ https://master.clades.nextstrain.org/?dataset-url=http://localhost:3000
 ---
 
 ## Author & Contact
-- Maintainers: Nadia Neuner-Jehle, Alejandra Gonzalez Sanchez and Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
+- Maintainers: Nadia Neuner-Jehle, Alejandra González-Sánchez and Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
 - For questions or suggestions, please [open an issue](https://github.com/hodcroftlab/nextclade_d68/issues) or email: eve-group[at]swisstph.ch
 
 ## Troubleshooting and Further Help

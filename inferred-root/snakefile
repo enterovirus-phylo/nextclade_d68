@@ -18,7 +18,7 @@ EXCLUDE =               "../resources/exclude.txt"
 SEQUENCES =             "../data/sequences.fasta"
 METADATA =              "../results/metadata.tsv"
 INCLUDE =               "../resources/include.txt"
-INFERRED_ANCESTOR =      "resources/inferred-root.fasta"
+INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
 
 
 rule all:
