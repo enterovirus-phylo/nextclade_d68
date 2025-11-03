@@ -1,6 +1,6 @@
 # Nextclade Workflow for Enterovirus D68
 
-This repository contains a robust, reproducible workflow for building a custom [Nextclade](https://github.com/nextstrain/nextclade) dataset for Enterovirus D68 (EV-D68). It enables you to generate reference and annotation files, download and process sequence data, infer an ancestral root, and create all files needed for Nextclade analyses and visualization.
+This repository contains a robust, reproducible workflow for building a custom [Nextclade](https://github.com/nextstrain/nextclade) dataset for Enterovirus D68 (EV-D68). It enables you to generate reference and annotation files, download and process sequence data, infer an ancestral sequence, and create all files needed for Nextclade analyses and visualization.
 
 ---
 
@@ -23,7 +23,7 @@ This workflow is composed of several modular steps:
 2. **Dataset Ingest**  
    Downloads and processes sequences and metadata from NCBI Virus.
 3. **Phylogenetic Root Inference (optional)**  
-   Infers a dataset-specific ancestral root sequence to use as a reference in Nextclade, improving mutation and clade assignments.
+   Infers a dataset-specific ancestral sequence to use as a reference in Nextclade, improving mutation and clade assignments.
 4. **Augur Phylogenetics & Nextclade Preparation**  
    Builds trees, prepares multiple sequence alignments, and generates all files required for Nextclade and Auspice.
 5. **Visualization & Analysis**  
@@ -71,7 +71,7 @@ Edit protein names and features as necessary for your use case.
 ---
 ### 4. Update the `Snakefile`
 
-- Adjust the first 29 lines for correct file paths and parameters.
+- Adjust the workflow parameters and file paths as needed for your dataset.
 - Ensure required files are available:
   - `data/sequences.fasta`
   - `data/metadata.tsv`
@@ -93,17 +93,18 @@ See [ingest/README.md](ingest/README.md) for specifics.
 
 ---
 
-### Inferred Root (Optional but Recommended)
+### Inferred Ancestral Sequence (Optional but Recommended)
 
-The `inferred-root/` directory contains a self-contained pipeline to infer a dataset-specific ancestral root, which can be used as a reference for Nextclade. This enhances mutation and clade call accuracy for EV-D68 datasets.
+The `inferred-root/` directory contains a reproducible pipeline to infer a dataset-specific ancestral sequence, which can be used as a reference sequence in Nextclade. This enhances mutation and clade call accuracy for your dataset.
 
 - **See:** [`inferred-root/README.md`](inferred-root/README.md) for details.
-- To enable, set `ANCESTRAL_ROOT_INFERRENCE = True` in your config and run with  
-  `--config root_inference_confirmed=true`.
+- To enable, set `STATIC_ANCESTRAL_INFERRENCE = True` in your config and run with  
+  `--config static_inference_confirmed=true`.
 - Without confirmation, the workflow will halt and display an opt-in message.
 
 > [!NOTE]  
-> To skip the inferred root step, leave `ANCESTRAL_ROOT_INFERRENCE = False`.
+> To skip the inferred root step, leave `STATIC_ANCESTRAL_INFERRENCE = False`.
+
 
 ### **Template for other enteroviruses:**  
 If you want to apply this approach to other enterovirus types (e.g., EV-A71, CVA16), a [Nextclade Dataset Template for Inferred Root](https://github.com/enterovirus-phylo/dataset-template-inferred-root) is available and recommended for reuse.
@@ -115,7 +116,7 @@ If you want to apply this approach to other enterovirus types (e.g., EV-A71, CVA
 To generate the Auspice JSON and a Nextclade example dataset:
 
 ```bash
-snakemake --cores 9 all --config root_inference_confirmed=true
+snakemake --cores 9 all --config static_inference_confirmed=true
 ```
 
 This will:
