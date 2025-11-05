@@ -2,7 +2,7 @@
 
 | Key                  | Value                                                                 |
 |----------------------|-----------------------------------------------------------------------|
-| authors              | [Nadia Neuner-Jehle](https://www.swisstph.ch/en/staff/profile/people/nadia-neuner-jehle), [Alejandra González-Sánchez](https://github.com/alejandra-gonzalezsanchez), [Emma B. Hodcroft](http://emmahodcroft.com/), [ENPEN](https://escv.eu/european-non-polio-enterovirus-network-enpen/)                                                 |
+| authors              | [Nadia Neuner-Jehle](https://eve-lab.org/people/nadia-neuner-jehle/), [Alejandra González-Sánchez](https://github.com/alejandra-gonzalezsanchez), [Emma B. Hodcroft](https://eve-lab.org/people/emma-hodcroft/), [ENPEN](https://escv.eu/european-non-polio-enterovirus-network-enpen/)                                                 |
 | name                 | Enterovirus D68                                                       |
 | reference            | [AY426531.1](https://www.ncbi.nlm.nih.gov/nuccore/AY426531.1)         |
 | workflow             | https://github.com/enterovirus-phylo/nextclade_d68                    |
@@ -13,9 +13,9 @@
 
 Based on the full genome sequence, this dataset uses the Fermon reference sequence ([AY426531.1](https://www.ncbi.nlm.nih.gov/nuccore/AY426531.1)), originally isolated in 1962. It provides a framework for quality control, clade assignment, and mutation calling across global EV-D68 diversity.
 
-***Note:** The Fermon reference is substantially diverged from currently circulating strains. This is common for many enterovirus datasets, in contrast to some other virus datasets (e.g., seasonal influenza) where the reference is updated more frequently to match recent sequences.*
+***Note:** The Fermon reference sequence differs significantly from currently circulating strains. This is common for many enterovirus datasets, in contrast to some other virus datasets (e.g., seasonal influenza) where the reference is updated more frequently to match recent sequences.*
 
-To address this, we also provide an **Static inferred ancestor**: a phylogenetically reconstructed ancestral sequence representative of the diversity in this dataset, which can serve as an alternative reference for analyses and improve interpretation of recent strains.
+To address this issue, we also provide a **Static Inferred Ancestor**: a phylogenetically reconstructed ancestral sequence representative of the diversity in this dataset. This alternative reference can improve the interpretation of recent strains.
 
 ## Features
 
@@ -30,7 +30,7 @@ This dataset supports:
 EV-D68 is divided into three clades: A (A1–A2), B (B1–B3) and C. Clade A2 is sometimes referred to as clade D.
 
 These designations are based on phylogenetic structure and are widely used in molecular epidemiology, similar to subgenotype systems for other enteroviruses.  
-Unlike influenza (H1N1, H3N2) or SARS-CoV-2, there is no universal, standardized global lineage nomenclature for enteroviruses — naming follows conventions from published studies and surveillance practice.
+Unlike influenza (H1N1, H3N2) or SARS-CoV-2, there is no universal, standardized global lineage nomenclature for enteroviruses. Naming follows conventions from published studies and surveillance practices.
 
 ## What is a Nextclade dataset?
 
