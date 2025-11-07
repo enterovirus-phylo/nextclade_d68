@@ -6,7 +6,7 @@ ALLOWED_DIVERGENCE =    "1000" # TODO: lower this threshold to exclude outliers
 MIN_DATE =              "1990-01-01"
 MIN_LENGTH =            "6000" # is 6000 for whole genome build on Nextstrain
 MAX_SEQS =              "1200" #TODO: set to 10000 for testing
-ROOTING =               "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
+ROOTING =               "ancestral_sequence"  # mid_point, outgroup, reference, ancestral sequence
 ID_FIELD=               "accession" # either accession or strain, used for meta-id-column in augur
 
 # Set the paths
@@ -56,10 +56,11 @@ if FETCH_SEQUENCES == True:
         output:
             sequences=SEQUENCES,
             metadata=METADATA
+        threads: workflow.cores
         shell:
             """
             cd {input.dir} 
-            snakemake --cores 9 all
+            snakemake --cores {threads} all
             cd ../
             """
 
@@ -88,6 +89,21 @@ rule curate:
         rm metadata.tmp
         """
 
+rule add_reference_to_include:
+    """
+    Create an include file for augur filter
+    """
+    input:
+        "resources/include.txt",
+    output:
+        "results/include.txt",
+    shell:
+        """
+        cat {input} >> {output}
+        echo "{REFERENCE_ACCESSION}" >> {output}
+        echo ancestral_sequence >> {output}
+        """
+
 if STATIC_ANCESTRAL_INFERRENCE == True:
     rule static_inferrence:
         message:
@@ -102,18 +118,20 @@ if STATIC_ANCESTRAL_INFERRENCE == True:
             meta = rules.curate.output.metadata,
             seq = SEQUENCES,
             meta_ancestral = "resources/static_inferred_metadata.tsv",
+            include = "results/include.txt"
         params:
             strain_id_field = ID_FIELD,
         output:
             inref = INFERRED_ANCESTOR,
             seq = "results/sequences_with_ancestral.fasta",
             meta = "results/metadata_with_ancestral.tsv",
+        threads: workflow.cores
         shell:
             """
             # Run the inferred-root snakefile
             echo "Running inferred-root workflow..."
             cd {input.dir} 
-            snakemake --cores 9 all
+            snakemake --cores {threads} all
             cd ../
 
             # Combine sequences (fixed the typo)
@@ -144,21 +162,6 @@ rule index_sequences:
         augur index \
             --sequences {input.sequences} \
             --output {output.sequence_index}
-        """
-
-rule add_reference_to_include:
-    """
-    Create an include file for augur filter
-    """
-    input:
-        "resources/include.txt",
-    output:
-        "results/include.txt",
-    shell:
-        """
-        cat {input} >> {output}
-        echo "{REFERENCE_ACCESSION}" >> {output}
-        echo ancestral_sequence >> {output}
         """
 
 rule filter:
@@ -656,14 +659,6 @@ rule mutLabels:
         zip -rj dataset.zip  out-dataset/*
         """
 
-rule clean:
-    shell:
-        """
-        rm -r results out-dataset test_out dataset.zip tmp
-        rm ingest/data/* data/*
-        rm resources/inferred-root.fasta
-        # rm -r inferred-root/results/* inferred-root/resources/*
-        """
 
 rule fragment_testing:
     input:
@@ -776,3 +771,13 @@ rule recombinant_testing:
                 if minlen < params.min_length: continue
                 x = random.randint(1, minlen-1)
                 out.write(f">inter_{p1.id}_D68_{x}_{p2.id}_D\n{p1.seq[:x]}{p2.seq[x:]}\n")
+
+
+rule clean:
+    shell:
+        """
+        rm ingest/data/* data/*
+        rm -r results out-dataset test_out dataset.zip tmp
+        rm resources/inferred-root.fasta inferred-root/resources/inferred-root.fasta
+        rm -r inferred-root/results/*
+        """
