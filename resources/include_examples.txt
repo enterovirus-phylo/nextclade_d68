@@ -1,4 +1,5 @@
-MN240507 # bad sequence
+# bad sequences
+#MN240507 # a Fermon strain
 OQ933700 # VP1
 KT285319 # mediocre
 KM892499 # bad; recombinant
