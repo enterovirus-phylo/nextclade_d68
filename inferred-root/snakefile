@@ -1,30 +1,21 @@
 # Set the parameters
 REFERENCE_ACCESSION =   "AY426531.1"
-TAXON_ID =              42789
-GENES =                 ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
 MIN_DATE =              "1990-01-01"
 MIN_LENGTH =            "7000" # was 6000 for whole genome results on Nextstrain
 MAX_SEQS =              "1000" #TODO: set to 10000 for testing
-# ROOTING =               "outgroup"  # alternative root using mid_point
 ID_FIELD=               "accession" # either accession or strain, used for meta-id-column in augur
 
-# Set the paths
-GFF_PATH =              "../dataset/genome_annotation.gff3"
-REFERENCE_PATH =        "../dataset/reference.fasta"
+OUTGROUP = ["MT081371.1", "DQ201177.1", "MT081370.1"] # EV-D111, EV-D70 and EV-D94
+# OUTGROUP = REFERENCE_ACCESSION
 
-GENBANK_PATH =          "../resources/reference.gbk"
+# Set the paths (make sure they are the same as those in the top-level Snakefile)
 EXCLUDE =               "../resources/exclude.txt"
-
 SEQUENCES =             "../data/sequences.fasta"
 METADATA =              "../results/metadata.tsv"
 INCLUDE =               "../results/include.txt"
 INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
 
-# OUTGROUP = ["AF326750.2", "AY697461.1", "AY421769.1"] # EV-A14, EV-A91 and EV-A125
-OUTGROUP = ["MT081371.1", "DQ201177.1", "MT081370.1"] # EV-D111, EV-D70 and EV-D94
-# OUTGROUP = REFERENCE_ACCESSION
-
-rule all:
+rule all_sub:
     input:
         seqs = INFERRED_ANCESTOR
     shell:

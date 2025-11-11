@@ -1,62 +1,87 @@
 # Inferred Ancestral Sequence for Enterovirus D68
 
-This repository provides a reproducible workflow for generating a static inferred ancestral ("root") sequence for Enterovirus D68 (EV-D68), designed for use as a custom reference in [Nextclade](https://clades.nextstrain.org/) analyses.
+This pipeline generates a static inferred ancestral sequence—a stable custom reference—for Enterovirus D68 (EV-D68), which is integrated into the main Nextclade dataset build.
+
+High-quality clade and mutation assignment depend on a representative reference. This workflow infers an ancestral sequence and inserts it early into the dataset, allowing Nextclade to use the inferred ancestor as a consistent reference sequence.
+
+## Key Concepts
+
+- The top-level Snakefile can run a dedicated sub-workflow (`inferred-root`) to infer a static ancestral/root sequence.
+- When `STATIC_ANCESTRAL_INFERENCE = True`, the pipeline:
+  1. Runs the `inferred-root` sub-workflow (`inferred-root/Snakefile`) to infer a root sequence and write it as `resources/inferred-root.fasta`.
+  2. Concatenates the inferred root FASTA with your input sequences to produce `results/sequences_with_ancestral.fasta`.
+  3. Merges the project metadata with a small metadata TSV for the ancestral sequence to produce `results/metadata_with_ancestral.tsv`.
+  4. Continues the standard downstream pipeline (`index → filter → align → tree → refine → ancestral → clades → export → assemble dataset`), now operating on the sequence set that includes the static inferred ancestor.
+
+Because the inferred ancestral sequence is injected early, all downstream steps consistently include the static inferred ancestor.
+
+## Files and Configuration
+
+- **Parameters:** Adjust in the first 8 lines of the Snakefile.
+- **Outgroup sequences:** Update the outgroup list and add FASTA files (one sequence per file) in `resources/outgroup/`, named by their accession IDs (e.g., `AY426531.1.fasta`).
+
+## Important Snakefile Options
+
+- `STATIC_ANCESTRAL_INFERENCE`: Enable or disable static ancestral insertion.
+- `INFERRENCE_RERUN`: Trigger rerunning the inferred-root workflow.
+- `INFERRED_ANCESTOR`: Path to the inferred root FASTA (default: `resources/inferred-root.fasta`).
+- `ID_FIELD`: Metadata ID column used during augur merge (default: `"accession"`).
+
+## Inputs
+
+- Your input sequences and metadata.
+- `include.txt` — list of sequences to include.
+
+## Key Outputs
+
+- `resources/inferred-root.fasta` — inferred root sequence produced by the workflow.
+- `results/sequences_with_ancestral.fasta` — input sequences plus the ancestral sequence.
+- `results/metadata_with_ancestral.tsv` — merged metadata including the ancestral sequence.
+
+---
+## Requirements 
+
+- Snakemake
+- Augur (nextstrain/augur)
+- Nextclade v3 (nextclade3)
+- jq (for dataset mutLabel merging)
+- Standard Python packages used by scripts in the repo (Biopython, pandas, etc.)
+
+## How the Static Inferred-Root Workflow Works
+
+1. **Subsample & Align:**  
+   A representative subset (up to `MAX_SEQS`) is selected via `augur filter`. Outgroup sequences from `resources/outgroup/` are always included. The selected sequences are aligned using MAFFT.
+
+2. **Tree Construction:**  
+   A maximum-likelihood tree is inferred with `augur tree`.
+
+3. **Outgroup Rooting & Ancestral Sequence Extraction:**  
+   The script [`pick_ancestral_sequence.py`](scripts/pick_ancestral_sequence.py) reroots the tree on the provided outgroup(s), identifies the MRCA of the ingroup (EV-D68 sequences), and extracts the ancestral sequence at this node. It replaces gaps with reference nucleotides to ensure a contiguous, biologically plausible sequence.
+
+4. **Post-processing & Export:**  
+   The cleaned ancestral FASTA is saved (`resources/inferred-root.fasta`) along with a matching metadata row (`resources/static_inferred_metadata.tsv`). These are injected back into the main pipeline to ensure consistent inclusion of the static inferred ancestor.
+
+---
 
 
-## Overview
-
-Phylogenetic analyses, such as those performed by Nextclade and Augur, benefit from a high-quality, dataset-representative reference sequence. This workflow infers such a static sequence by reconstructing the ancestral sequence from your entire  dataset, allowing for more accurate mutation and clade assignments.
-
-**Workflow summary:**
-1. **Phylogenetic Tree Construction:** All sequences in the provided dataset are aligned and a maximum-likelihood tree is built.
-2. **Ancestral Sequence Inference:** The [Augur](https://github.com/nextstrain/augur) toolkit is used to infer the ancestral (root) sequence, labeled `NODE_0000000` in the output FASTA.
-3. **Gap Correction:** The script [`fix_root_gaps.py`](scripts/fix_root_gaps.py) replaces any gaps (`-`) or ambiguous bases (`N`) in the inferred sequence with the corresponding reference nucleotides, ensuring a contiguous and biologically plausible inferred sequence.
-4. **Export:** The cleaned ancestral sequence FASTA is available for use as a custom reference in Nextclade. The corresponding metadata is also provided and should be kept in sync.
-
-
-## Getting Started
-### Running the Workflow
-
-To generate the inferred ancestral root:
+## Quick run
+Run the inferred-root subworkflow:
 
 ```bash
-snakemake --cores 9 all
+snakemake --cores 9 all_sub
 ```
-
-This will:
-- Build a phylogenetic tree and infer the ancestral root
-- Extract and gap-correct the root sequence (`NODE_0000000`)
-- Output a finalized FASTA and updated metadata
-
-### Output Files
-
-- `results/ancestral_sequences.fasta`: All inferred ancestral sequences (from Augur)
-- `resources/inferred_root.fasta`: Gap-corrected ancestral sequence
-
-
-## Updating the Ancestral Root or Metadata
-
-If you update your dataset or rerun the workflow:
-- **Be sure to also update the corresponding [metadata file](../resources/static_inferred_metadata.tsv)**  to match the new inferred sequence.
-- Record the date of the latest update (see below).
-
-**Latest static inferred sequence generated:**  
-📅 2025-10-17
 
 
 ---
-## FAQ
+## Tips and Cautions
+- Ensure the metadata file [static_inferred_metadata.tsv](../resources/static_inferred_metadata.tsv) is provided and kept up-to-date.
+- The inferred root sequence header must match the metadata ID exactly to guarantee correct merging and labeling.
 
-**Q: Why use a static inferred ancestor for Nextclade?**  
-A: Using an inferred ancestral sequence representative of your dataset improves mutation calling and clade assignment, especially for highly variable viruses like EV-D68.
+- After running static inference, verify `results/sequences_with_ancestral.fasta` and `results/metadata_with_ancestral.tsv` to confirm the ancestral sequence has been added and correctly labeled.
 
-**Q: How is the inferred sequence cleaned?**  
-A: Gaps or ambiguous bases in the inferred root are replaced positionally with nucleotides from the reference sequence using [`fix_root_gaps.py`](scripts/fix_root_gaps.py).
+## Additional Resources
 
-**Q: Should I also use this with other enterovirus datasets?**  
-A: Yes! This approach is recommended for other enterovirus types (EV-A71, CVA16, etc.) — a Nextclade Dataset Template is available under [enterovirus-phylo/dataset-template-inferred-root](https://github.com/enterovirus-phylo/dataset-template-inferred-root).
-
-
+- A Nextclade Dataset Template using this inferred-root approach is available here: [enterovirus-phylo/dataset-template-inferred-root](https://github.com/enterovirus-phylo/dataset-template-inferred-root).
 
 ## Author & Contact
 

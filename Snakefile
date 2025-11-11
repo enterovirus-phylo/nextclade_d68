@@ -30,8 +30,12 @@ COLORS_SCHEMES =        "resources/color_schemes.tsv"
 INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
 
 FETCH_SEQUENCES = True
-STATIC_ANCESTRAL_INFERRENCE = True
-configfile: "config.yaml"
+STATIC_ANCESTRAL_INFERRENCE = True # whether to use the static inferred ancestral sequence
+INFERRENCE_RERUN = True # whether to rerun the inference of the ancestral sequence worfkflow (inferred-root)
+
+INFERRED_SEQ_PATH = "results/sequences_with_ancestral.fasta" if STATIC_ANCESTRAL_INFERRENCE else SEQUENCES
+INFERRED_META_PATH = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else "results/metadata.tsv"
+
 include: "scripts/workflow_messages.snkm"
 
 rule all:
@@ -104,13 +108,13 @@ rule add_reference_to_include:
         echo ancestral_sequence >> {output}
         """
 
-if STATIC_ANCESTRAL_INFERRENCE == True:
+if STATIC_ANCESTRAL_INFERRENCE and INFERRENCE_RERUN:
     rule static_inferrence:
         message:
             """
             Running "inferred-root" snakefile for inference of the ancestral root. 
             This reference will be included in the Nextclade reference tree.
-            WARNING: This will overwrite your sequence & meta file!
+            WARNING: This will overwrite your {output.seq} & {output.meta} files!
             """
         input:
             dir = "inferred-root",
@@ -123,28 +127,30 @@ if STATIC_ANCESTRAL_INFERRENCE == True:
             strain_id_field = ID_FIELD,
         output:
             inref = INFERRED_ANCESTOR,
-            seq = "results/sequences_with_ancestral.fasta",
-            meta = "results/metadata_with_ancestral.tsv",
+            seq = INFERRED_SEQ_PATH,
+            meta = INFERRED_META_PATH,
         threads: workflow.cores
         shell:
-            """
-            # Run the inferred-root snakefile
-            echo "Running inferred-root workflow..."
-            cd {input.dir} 
-            snakemake --cores {threads} all
-            cd ../
+            r"""
+            set -euo pipefail
 
-            # Combine sequences (fixed the typo)
+            echo "Cleaning previous results..."
+            rm -rf {input.dir}/results/* {input.dir}/resources/inferred-root.fasta
+
+            echo "Running inferred-root workflow..."
+            cd {input.dir}
+            snakemake --cores {threads} all_sub
+            cd - > /dev/null
+
             echo "Combining sequences with ancestral root..."
             cat {input.seq} {output.inref} > {output.seq}
 
-            # Merge metadata
             echo "Merging metadata..."
             augur merge \
                 --metadata metadata={input.meta} ancestral={input.meta_ancestral} \
                 --metadata-id-columns {params.strain_id_field} \
                 --output-metadata {output.meta}
-            
+
             echo "Static ancestral inference completed successfully!"
             """
 
@@ -154,7 +160,7 @@ rule index_sequences:
         Creating an index of sequence composition for filtering
         """
     input:
-        sequences = "results/sequences_with_ancestral.fasta" if STATIC_ANCESTRAL_INFERRENCE else SEQUENCES,
+        sequences = INFERRED_SEQ_PATH,
     output:
         sequence_index = "results/sequence_index.tsv"
     shell:
@@ -170,9 +176,9 @@ rule filter:
     Only take sequences longer than {MIN_LENGTH}
     """
     input:
-        sequences = "results/sequences_with_ancestral.fasta" if STATIC_ANCESTRAL_INFERRENCE else SEQUENCES,
+        sequences = INFERRED_SEQ_PATH,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else rules.curate.output.metadata,
+        metadata = INFERRED_META_PATH,
         include = rules.add_reference_to_include.output,
     output:
         filtered_sequences = "results/filtered_sequences_raw.fasta",
@@ -286,7 +292,7 @@ rule exclude:
     input:
         sequences = rules.align.output.alignment,
         sequence_index = rules.index_sequences.output.sequence_index,
-        metadata = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else rules.curate.output.metadata,
+        metadata = INFERRED_META_PATH,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         example = INCLUDE_EXAMPLES,
@@ -561,8 +567,8 @@ rule extract_clades_tsv:
 
 rule subsample_example_sequences:
     input:
-        all_sequences = "results/sequences_with_ancestral.fasta" if STATIC_ANCESTRAL_INFERRENCE else SEQUENCES,
-        metadata = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else rules.curate.output.metadata,
+        all_sequences = INFERRED_SEQ_PATH,
+        metadata = INFERRED_META_PATH,
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         incl_examples = INCLUDE_EXAMPLES,
