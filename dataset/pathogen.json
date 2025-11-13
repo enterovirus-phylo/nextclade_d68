@@ -54,7 +54,7 @@
     "privateMutations": {
       "enabled": true,
       "cutoff": 120,
-      "typical": 50,
+      "typical": 40,
       "weightLabeledSubstitutions": 1.5,
       "weightReversionSubstitutions": 2,
       "weightUnlabeledSubstitutions": 1
