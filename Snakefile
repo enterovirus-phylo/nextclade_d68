@@ -37,6 +37,7 @@ INFERRED_SEQ_PATH = "results/sequences_with_ancestral.fasta" if STATIC_ANCESTRAL
 INFERRED_META_PATH = "results/metadata_with_ancestral.tsv" if STATIC_ANCESTRAL_INFERRENCE else "results/metadata.tsv"
 
 include: "scripts/workflow_messages.snkm"
+configfile: PATHOGEN_JSON
 
 rule all:
     input:
@@ -218,16 +219,17 @@ rule align:
         tsv = "results/nextclade.tsv",
     params:
         translation_template = lambda w: "results/translations/cds_{cds}.translation.fasta",
-        penalty_gap_extend = 3, #make longer gaps more costly - default is 0
-        penalty_gap_open = 16,  #make gaps more expensive relative to mismatches - default is 13
-        penalty_gap_open_in_frame = 7, #make gaps more expensive relative to mismatches - default is 7
-        penalty_gap_open_out_of_frame = 30, #make out of frame gaps more expensive - default is 8 # prev was 19
-        kmer_length = 6, #reduce to find more matches - default is 10
-        kmer_distance = 15, #reduce to try more seeds - default is 50
-        min_match_length = 25, #reduce to keep more seeds - default is 40
-        allowed_mismatches = 10, #increase to keep more seeds - default is 8
-        min_length = 100, # min_length - default is 100
-        gap_alignment_side = "right", # default is left
+        penalty_gap_extend = config["alignmentParams"]["penalityGapExtend"],
+        penalty_gap_open = config["alignmentParams"]["penaltyGapOpen"],
+        penalty_gap_open_in_frame = config["alignmentParams"]["penaltyGapOpenInFrame"],
+        penalty_gap_open_out_of_frame = config["alignmentParams"]["penaltyGapOpenOutOfFrame"],
+        kmer_length = config["alignmentParams"]["kmerLength"],
+        kmer_distance = config["alignmentParams"]["kmerDistance"],
+        min_match_length = config["alignmentParams"]["minMatchLength"],
+        allowed_mismatches = config["alignmentParams"]["allowedMismatches"],
+        min_length = config["alignmentParams"]["minLength"],
+        gap_alignment_side = config["alignmentParams"]["gapAlignmentSide"],  
+        min_seed_cover = config["alignmentParams"]["minSeedCover"],
     shell:
         """
         nextclade3 run \
@@ -245,6 +247,7 @@ rule align:
         --kmer-distance {params.kmer_distance} \
         --min-match-length {params.min_match_length} \
         --allowed-mismatches {params.allowed_mismatches} \
+        --min-seed-cover {params.min_seed_cover} \
         --min-length {params.min_length} \
         --max-alignment-attempts 5 \
         --include-reference false \
