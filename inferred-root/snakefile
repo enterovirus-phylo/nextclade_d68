@@ -137,3 +137,10 @@ rule pick_ancestral_sequence:
             {params.reference} \
             {output}
         """
+
+rule clean:
+    shell:
+        """
+        rm ../resources/inferred-root.fasta resources/inferred-root.fasta
+        rm -r results/*
+        """

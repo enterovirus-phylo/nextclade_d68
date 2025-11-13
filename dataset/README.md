@@ -44,7 +44,7 @@ This dataset includes several reference points used in analyses:
 
 - *Tree root:* Corresponds to the root of the tree, it may change in future updates as more data become available.
 
-All references use the coordination system of the Fermon sequence.
+All references use the coordinate system of the Fermon sequence.
 
 ## Issues & Contact
 - For questions or suggestions, please [open an issue](https://github.com/enterovirus-phylo/nextclade_d68/issues) or email: eve-group[at]swisstph.ch
