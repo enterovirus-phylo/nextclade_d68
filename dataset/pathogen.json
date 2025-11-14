@@ -17,7 +17,7 @@
   },
   "alignmentParams": {
     "penalityGapExtend":3,
-    "penaltyGapOpen": 15,
+    "penaltyGapOpen": 16,
     "penaltyGapOpenInFrame": 20,
     "penaltyGapOpenOutOfFrame": 25,
     "kmerLength": 6,
@@ -34,6 +34,9 @@
         "web": "3.0.0"
     },
   "mutLabels": {
+  "aaMutLabelMap": {
+    "VP1:6G": ["B3"]
+  },
   "nucMutLabelMap": {
     }
   },
@@ -67,11 +70,6 @@
     "stopCodons": {
       "enabled": true,
       "scoreWeight": 40
-    },
-    "recombinants": {
-      "enabled": true,
-      "mutationsThreshold": 140,
-      "scoreWeight": 50
     }
     },
     "cdsOrderPreference": [

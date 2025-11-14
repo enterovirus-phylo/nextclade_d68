@@ -652,19 +652,39 @@ rule test:
 
 rule mutLabels:
     input:
-        d = directory("test_out"),
+        table = "results/nextclade.tsv",
+        clade = "results/clades_metadata.tsv",
         json = PATHOGEN_JSON,
     params:
-        "results/virus_properties.json",
+        min_proportion = 0.2,
+        high_threshold_proportion = 0.70,
+        clades_high_threshold = ["A1","A2/D","B1","B2","B3","C"],
+        clades_to_drop = ["unassigned"],
     output:
-        "out-dataset/pathogen.json"
+        clade_meta = "results/clades_mut_metadata.tsv",
+        properties = "results/virus_properties.json",
+        json = "out-dataset/pathogen.json"
     shell:
         """
-        python3 scripts/generate_virus_properties.py
-        jq --slurpfile v {params} \
+        augur merge \
+            --metadata meta={input.table} clade={input.clade} \
+            --metadata-id-columns meta=seqName clade=accession \
+            --output-metadata {output.clade_meta}
+
+        python3 scripts/generate_virus_properties.py \
+            --clade_meta {output.clade_meta} \
+            --properties {output.properties} \
+            --min-prop {params.min_proportion} \
+            --high-min-prop {params.high_threshold_proportion} \
+            --high-prop-clades "{params.clades_high_threshold}" \
+            --exclude-clades "{params.clades_to_drop}"
+
+
+        jq --slurpfile v {output.properties} \
            '.mutLabels.nucMutLabelMap = $v[0].nucMutLabelMap |
             .mutLabels.nucMutLabelMapReverse = $v[0].nucMutLabelMapReverse' \
-           {input.json} > {output}
+           {input.json} > {output.json}
+
         zip -rj dataset.zip  out-dataset/*
         """
 
