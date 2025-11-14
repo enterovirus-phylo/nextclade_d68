@@ -47,8 +47,8 @@
     },
     "missingData": {
       "enabled": true,
-      "missingDataThreshold": 200,
-      "scoreBias": 2400
+      "missingDataThreshold": 1000,
+      "scoreBias": 100
     },
     "mixedSites": {
       "enabled": true,
@@ -69,20 +69,12 @@
     },
     "stopCodons": {
       "enabled": true,
-      "scoreWeight": 40
+      "scoreWeight": 60
     }
     },
     "cdsOrderPreference": [
-      "VP4",
-      "VP2",
-      "VP3",
-      "VP1",
-      "2A",
-      "2B",
-      "2C",
-      "3A",
-      "3B",
-      "3C",
-      "3D"
+      "VP4","VP2","VP3","VP1",
+      "2A","2B","2C",
+      "3A","3B","3C","3D"
     ]
   }
