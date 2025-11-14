@@ -5,6 +5,7 @@ KM892499 # bad; recombinant
 OP321151 # bad sequence
 LC629446 # mediocre
 KX433162 # frameshift
+PQ415017
 
 # good sequences
 # A1
