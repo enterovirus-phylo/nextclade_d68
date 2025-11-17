@@ -188,7 +188,7 @@ rule filter:
         min_date="" if MIN_DATE == "" else "--min-date " + MIN_DATE,
         min_length="" if MIN_LENGTH == "" else "--min-length " + MIN_LENGTH,
         max_seqs=MAX_SEQS,
-        categories = "country year", #TODO: add subsampling per category?
+        # categories = "country year", #TODO: add subsampling per category?
         strain_id_field = ID_FIELD,
     shell:
         """
@@ -329,7 +329,7 @@ rule tree:
         alignment = rules.exclude.output.filtered_sequences,
     output:
         tree = "results/tree_raw.nwk",
-    threads: 9
+    threads: workflow.cores
     shell:
         """
         augur tree \
