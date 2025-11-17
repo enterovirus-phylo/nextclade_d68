@@ -85,8 +85,8 @@ snakemake --cores 9 all_sub
 
 ## Author & Contact
 
-- Maintainers: Nadia Neuner-Jehle, Alejandra González-Sánchez and Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
-- For questions or suggestions, please [open an issue](https://github.com/hodcroftlab/nextclade_d68/issues) or email: eve-group[at]swisstph.ch
+- Maintainers: Nadia Neuner-Jehle, Alejandra González-Sánchez and Emma B. Hodcroft ([eve-lab.org](https://eve-lab.org/))
+- For questions or suggestions, please [open an issue](https://github.com/enterovirus-phylo/nextclade_d68/issues) or email: eve-group[at]swisstph.ch
 
 
 

@@ -149,12 +149,12 @@ https://master.clades.nextstrain.org/?dataset-url=http://localhost:3000
 ---
 
 ## Author & Contact
-- Maintainers: Nadia Neuner-Jehle, Alejandra González-Sánchez and Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
-- For questions or suggestions, please [open an issue](https://github.com/hodcroftlab/nextclade_d68/issues) or email: eve-group[at]swisstph.ch
+- Maintainers: Nadia Neuner-Jehle, Alejandra González-Sánchez and Emma B. Hodcroft ([eve-lab.org](https://eve-lab.org/))
+- For questions or suggestions, please [open an issue](https://github.com/enterovirus-phylo/nextclade_d68/issues) or email: eve-group[at]swisstph.ch
 
 ## Troubleshooting and Further Help
 
-- For issues, see the [official Nextclade documentation](https://docs.nextstrain.org/projects/nextclade/en/stable/index.html#) or [open an issue](https://github.com/hodcroftlab/nextclade_d68/issues).
+- For issues, see the [official Nextclade documentation](https://docs.nextstrain.org/projects/nextclade/en/stable/index.html#) or [open an issue](https://github.com/enterovirus-phylo/nextclade_d68/issues).
 - For details on the inferred root workflow, see [`inferred-root/README.md`](inferred-root/README.md).
 - For adapting to other enteroviruses, see the [dataset-template-inferred-root](https://github.com/enterovirus-phylo/dataset-template-inferred-root).
 
@@ -163,8 +163,8 @@ https://master.clades.nextstrain.org/?dataset-url=http://localhost:3000
 This guide provides a structured, scalable approach to building and using high-quality Nextclade datasets for EV-D68 — and can be adapted for other enterovirus types as well.
 
 ## Task List
-- [x] Integrate ancestral inferred-root into workflow (https://github.com/hodcroftlab/nextclade_d68/pull/2)
+- [x] Integrate ancestral inferred-root into workflow (https://github.com/enterovirus-phylo/nextclade_d68/pull/2)
 - [x] Validate clade assignment of fragmented sequences in Nextclade (`testing/`)
-- [x] Ensure novel recombinants get assigned to the root (issue https://github.com/hodcroftlab/nextclade_d68/issues/3) -> recombinant feature in testing; QC label
+- [x] Ensure novel recombinants get assigned to the root (issue https://github.com/enterovirus-phylo/nextclade_d68/issues/3) -> recombinant feature in testing; QC label
 - [ ] Review and validate EV-D68 nomenclature, including robustness with recombinant sequences
 - [ ] Integrate epitope mutation information as tree coloring and/or display in the Nextclade results table

@@ -1,10 +1,14 @@
 {
   "title": "Enterovirus D68 - Nextclade dataset tree",
-  "build_url": "https://github.com/hodcroftlab/nextclade_d68",
+  "build_url": "https://github.com/enterovirus-phylo/nextclade_d68",
   "maintainers": [
     {
       "name": "Nadia Neuner-Jehle",
       "url": "https://eve-lab.org/people/nadia-neuner-jehle/"
+    },
+    {
+      "name": "Alejandra González-Sánchez",
+      "url": "https://www.vallhebron.com/en/professionals/alejandra-gonzalez-sanchez"
     },
     {
       "name": "Emma Hodcroft",
