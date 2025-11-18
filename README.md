@@ -246,9 +246,10 @@ This guide provides a structured, scalable approach to building and using high-q
 **Completed:**
 - [x] Integrate ancestral inferred-root into workflow (https://github.com/enterovirus-phylo/nextclade_d68/pull/2)
 - [x] Validate clade assignment of fragmented sequences in Nextclade (`testing/`)
-- [x] Ensure novel recombinants get assigned to the root (issue #3) → recombinant feature in testing; QC label
+- [x] Ensure novel recombinants get assigned to the root (issue https://github.com/enterovirus-phylo/nextclade_d68/issues/3) → recombinant feature in testing; QC label
 - [x] Review and validate EV-D68 nomenclature, including robustness with recombinant sequences
 - [x] Integrate epitope mutation information as tree coloring and/or display in the Nextclade results table
+- [x] Generate the inferred ancestral sequence from the outgroup-rooted tree (see [mpox](https://github.com/corneliusroemer/alignment-ref-construction/tree/e7ae8c7ed51d9754212a113c8d795180f1b80410) for technical details)
 - [x] Create test dataset — small example demonstrating the full inferred-root workflow end-to-end
 
 **Documentation & Visualization:**
