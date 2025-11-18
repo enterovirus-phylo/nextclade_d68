@@ -88,8 +88,16 @@ See the [Nextclade pathogen config documentation](https://docs.nextstrain.org/pr
 
 ### 3. Prepare GenBank Reference
 
-Copy your GenBank file to `resources/reference.gb`.  
-Edit protein names and features as necessary for your use case.
+Copy your GenBank file to `resources/reference.gb` and edit it to ensure compatibility with the workflow.
+
+**Important requirements:**
+- Each coding sequence (CDS) must have either a `product` or `gene` name present
+- The annotation keys must **match exactly** between `reference.gb` and `genome_annotation.gff3`
+- Use simple, consistent names (e.g., `product="VP1"` instead of `product="VP1_protein"`)
+- Remove any genes that are not relevant for your dataset
+
+> [!WARNING]  
+> Mismatched or inconsistent gene names will cause `augur ancestral` to fail, as it cannot match features across files. Ensure your protein names match those defined in the `GENES` list in the [Snakefile](/Snakefile#L4).
 
 ---
 
@@ -249,7 +257,7 @@ This guide provides a structured, scalable approach to building and using high-q
 - [x] Ensure novel recombinants get assigned to the root (issue https://github.com/enterovirus-phylo/nextclade_d68/issues/3) → recombinant feature in testing; QC label
 - [x] Review and validate EV-D68 nomenclature, including robustness with recombinant sequences
 - [x] Integrate epitope mutation information as tree coloring and/or display in the Nextclade results table
-- [x] Generate the inferred ancestral sequence from the outgroup-rooted tree (see [mpox](https://github.com/corneliusroemer/alignment-ref-construction/tree/e7ae8c7ed51d9754212a113c8d795180f1b80410) for technical details)
+- [x] Generate the inferred ancestral sequence from the outgroup-rooted tree (see [mpox](https://github.com/corneliusroemer/alignment-ref-construction/tree/e7ae8c7ed51d9754212a113c8d795180f1b80410) for technical details); Commit [605c4db](https://github.com/enterovirus-phylo/nextclade_d68/commit/605c4db1062014800c02d67b00b012cbdca049d6).
 - [x] Create test dataset — small example demonstrating the full inferred-root workflow end-to-end
 
 **Documentation & Visualization:**
