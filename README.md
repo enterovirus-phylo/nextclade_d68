@@ -2,8 +2,15 @@
 
 This repository contains a robust, reproducible workflow for building a custom [Nextclade](https://github.com/nextstrain/nextclade) dataset for Enterovirus D68 (EV-D68). It enables you to generate reference and annotation files, download and process sequence data, infer an ancestral sequence, and create all files needed for Nextclade analyses and visualization.
 
----
+### Citation
 
+If you use this dataset in your research, please cite:
+
+> Nadia Neuner-Jehle, & Emma Hodcroft. (2025). *enterovirus-phylo/nextclade_d68: Enterovirus D68 Nextclade Dataset v1.0.0* (v1.0.0--2025-11-18). Zenodo. https://doi.org/10.5281/zenodo.17642339
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17642339.svg)](https://doi.org/10.5281/zenodo.17642339)
+
+---
 ## Quick Start
 
 ```bash
