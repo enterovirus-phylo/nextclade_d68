@@ -219,7 +219,7 @@ rule align:
         tsv = "results/nextclade.tsv",
     params:
         translation_template = lambda w: "results/translations/cds_{cds}.translation.fasta",
-        penalty_gap_extend = config["alignmentParams"]["penalityGapExtend"],
+        penalty_gap_extend = config["alignmentParams"]["penaltyGapExtend"],
         penalty_gap_open = config["alignmentParams"]["penaltyGapOpen"],
         penalty_gap_open_in_frame = config["alignmentParams"]["penaltyGapOpenInFrame"],
         penalty_gap_open_out_of_frame = config["alignmentParams"]["penaltyGapOpenOutOfFrame"],

@@ -16,7 +16,7 @@
     "reference accession": "AY426531.1"
   },
   "alignmentParams": {
-    "penalityGapExtend":3,
+    "penaltyGapExtend":3,
     "penaltyGapOpen": 16,
     "penaltyGapOpenInFrame": 20,
     "penaltyGapOpenOutOfFrame": 25,
