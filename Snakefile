@@ -154,6 +154,31 @@ if STATIC_ANCESTRAL_INFERRENCE and INFERRENCE_RERUN:
 
             echo "Static ancestral inference completed successfully!"
             """
+if STATIC_ANCESTRAL_INFERRENCE and not INFERRENCE_RERUN:
+    rule add_ancestral:
+        input:
+            meta = rules.curate.output.metadata,
+            seq = SEQUENCES,
+            meta_ancestral = "resources/static_inferred_metadata.tsv",
+            inref = INFERRED_ANCESTOR,
+        output:
+            seq = INFERRED_SEQ_PATH,
+            meta = INFERRED_META_PATH,
+        params:
+            strain_id_field="accession",
+        shell:
+            """
+            echo "Combining sequences with ancestral root..."
+            cat {input.seq} {input.inref} > {output.seq}
+
+            echo "Merging metadata..."
+            augur merge \
+                --metadata metadata={input.meta} ancestral={input.meta_ancestral} \
+                --metadata-id-columns {params.strain_id_field} \
+                --output-metadata {output.meta}
+
+            echo "Static ancestral sequence imported successfully!"
+            """
 
 rule index_sequences:
     message:
