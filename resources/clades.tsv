@@ -1,32 +1,69 @@
 clade	gene	site	alt
-B3	nuc	831	T
-B3	nuc	924	A
-
-B1	nuc	4290	C
-B1	nuc	957	A
-B1	nuc	3090	T
-
+A	VP1	1	L
+A	VP1	46	S
+A	VP1	144	N
+A	VP1	168	E
+A	VP1	95	E
+A	VP1	140	-
 A	nuc	1503	A
 A	nuc	4758	C
 
+A1	VP1	97	R
+A1	VP1	143	S
+A1	VP1	148	I
 A1	nuc	204	T
 A1	nuc	3864	C
 
+A2/D	VP1	2	E
+A2/D	VP1	92	T
+A2/D	VP1	187	V
 A2/D	nuc	711	G
 A2/D	nuc	721	C
+
+A2/D1	clade	A2/D
+A2/D1	VP1	243	I
+
+A2/D2	VP1	5	D
+A2/D2	VP1	6	A
+A2/D2	VP1	280	R
+
+A2/D3	nuc	1761	G
+A2/D3	nuc	5484	C
+A2/D3	VP1	98	I
+
+C	VP1	143	S
+C	VP1	5	D
+C	VP1	290	S
+C	VP1	145	N
+C	VP1	110	R
+C	VP1	169	Q
+C	VP1	207	I
+C	VP1	103	Y
+C	nuc	1227	G
+C	nuc	5595	T
+C	nuc	6583	C
+
+B	VP1	90	D
+B	VP1	144	N
+B	VP1	168	E
+B	nuc	765	C
+B	nuc	1956	T
+B	nuc	4749	A
+B	nuc	6087	T
+
+B1	VP1	218	S
+B1	VP1	290	S
+B1	nuc	4290	C
+B1	nuc	957	A
+B1	nuc	3090	T
 
 B2	nuc	711	G
 B2	nuc	999	C
 B2	nuc	1038	C
 B2	nuc	1137	A
 
-C	nuc	1227	G
-C	nuc	5595	T
-C	nuc	6583	C
-
-B	nuc	765	C
-B	nuc	1956	T
-B	nuc	4749	A
-B	nuc	6087	T
+B3	VP1	148	V
+B3	nuc	831	T
+B3	nuc	924	A
 
 pre-ABC	nuc	30	A
