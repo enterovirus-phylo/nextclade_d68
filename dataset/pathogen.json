@@ -26,6 +26,7 @@
     "allowedMismatches": 10,
     "minLength": 100,
     "gapAlignmentSide": "right",
+    "retryReverseComplement": true,
     "minSeedCover": 0.40
   },
   "defaultCds": "VP1",

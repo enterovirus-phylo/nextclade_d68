@@ -7,6 +7,9 @@ LC629446 # mediocre
 KX433162 # frameshift
 PQ415017
 
+# high div
+OP321151
+
 # good sequences
 # A1
 LC068710
