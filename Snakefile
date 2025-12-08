@@ -59,8 +59,8 @@ if FETCH_SEQUENCES == True:
         input:
             dir = "ingest"
         output:
-            sequences=SEQUENCES,
-            metadata=METADATA
+            sequences = SEQUENCES,
+            metadata = METADATA
         threads: workflow.cores
         shell:
             """
@@ -75,7 +75,7 @@ rule curate:
         Cleaning up metadata with augur merge & augur curate
         """
     input:
-        meta=METADATA,  # Path to input metadata file
+        meta = METADATA,  # Path to input metadata file
         strains = ACCESSION_STRAIN  # Strain - accession lookup table
     params:
         strain_id_field = ID_FIELD,
@@ -154,6 +154,7 @@ if STATIC_ANCESTRAL_INFERRENCE and INFERRENCE_RERUN:
 
             echo "Static ancestral inference completed successfully!"
             """
+
 if STATIC_ANCESTRAL_INFERRENCE and not INFERRENCE_RERUN:
     rule add_ancestral:
         input:
@@ -165,7 +166,7 @@ if STATIC_ANCESTRAL_INFERRENCE and not INFERRENCE_RERUN:
             seq = INFERRED_SEQ_PATH,
             meta = INFERRED_META_PATH,
         params:
-            strain_id_field="accession",
+            strain_id_field = "accession",
         shell:
             """
             echo "Combining sequences with ancestral root..."
@@ -212,7 +213,7 @@ rule filter:
     params: 
         min_date="" if MIN_DATE == "" else "--min-date " + MIN_DATE,
         min_length="" if MIN_LENGTH == "" else "--min-length " + MIN_LENGTH,
-        max_seqs=MAX_SEQS,
+        max_seqs = MAX_SEQS,
         # categories = "country year", #TODO: add subsampling per category?
         strain_id_field = ID_FIELD,
     shell:
@@ -365,11 +366,11 @@ rule tree:
 
 rule refine:
     input:
-        tree=rules.tree.output.tree,
-        alignment=rules.exclude.output.filtered_sequences,
+        tree = rules.tree.output.tree,
+        alignment = rules.exclude.output.filtered_sequences,
     output:
-        tree="results/tree.nwk",
-        node_data="results/branch_lengths.json",
+        tree = "results/tree.nwk",
+        node_data = "results/branch_lengths.json",
     shell:
         """
         augur refine \
@@ -523,12 +524,12 @@ rule epitopes:
 rule colors:
     """Assign colors based on ordering"""
     input:
-        ordering=rules.get_dates.output.ordering,
-        color_schemes=COLORS_SCHEMES,
-        colors=COLORS,
+        ordering = rules.get_dates.output.ordering,
+        color_schemes = COLORS_SCHEMES,
+        colors = COLORS,
     output:
-        colors="results/colors_dates.tsv",
-        final_colors="results/final_colors.tsv"
+        colors = "results/colors_dates.tsv",
+        final_colors = "results/final_colors.tsv"
     shell:
         """
         python3 scripts/assign-colors.py \
@@ -553,7 +554,7 @@ rule export:
         epitopes = rules.epitopes.output.node_data,
     params:
         strain_id_field = ID_FIELD,
-        fields="region country date",
+        fields = "region country date",
     output:
         auspice = "results/auspice.json",
     shell:
@@ -571,7 +572,7 @@ rule export:
 
 rule extract_clades_tsv:
     input:
-        json=rules.clades.output.json,
+        json = rules.clades.output.json,
     output:
         tsv = "results/clades_metadata.tsv"
     run:
