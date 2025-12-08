@@ -1,6 +1,8 @@
 ## Unreleased
 
-Update alignment parameters in pathogen.json; gap extend penalty and reverse complement. 
+- Update alignment parameters in pathogen.json:
+    - Fix gap extension penalty
+    - Enable reverse-complement handling
 
 ## 2025-11-20T19:02:04Z
 
