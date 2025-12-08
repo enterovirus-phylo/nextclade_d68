@@ -6,8 +6,16 @@
 | name                 | Enterovirus D68                                                       |
 | reference            | [AY426531.1](https://www.ncbi.nlm.nih.gov/nuccore/AY426531.1)         |
 | workflow             | https://github.com/enterovirus-phylo/nextclade_d68                    |
-| path                 | `TBD`                                                                 |
-| clade definitions    |  A–C (D)                                                              |
+| path                 | `enpen/enterovirus/ev-d68`                                            |
+| clade definitions    | A–C (D)                                                               |
+
+## Citation
+
+If you use this dataset in your research, please cite:
+
+> Neuner-Jehle, N., González Sánchez, A., Hodcroft, E. B., & European Non-Polio Enterovirus Network (ENPEN). (2025). *enterovirus-phylo/nextclade_d68: Enterovirus D68 Nextclade Dataset v1.0.0* (v1.0.0--2025-11-18). Zenodo. https://doi.org/10.5281/zenodo.17642338
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17642338.svg)](https://doi.org/10.5281/zenodo.17642338)
 
 ## Scope of this dataset
 
@@ -34,7 +42,7 @@ These designations are based on the phylogenetic structure and mutations, and ar
 ## Reference types
 
 This dataset includes several reference points used in analyses:
-- *Reference:*: RefSeq or similarly established reference sequence. Here Fermon.
+- *Reference:* RefSeq or similarly established reference sequence. Here Fermon.
 
 - *Parent:* The nearest ancestral node of a sample in the tree, used to infer branch-specific mutations.
 
