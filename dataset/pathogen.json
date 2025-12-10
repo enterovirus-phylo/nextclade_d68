@@ -71,12 +71,6 @@
     "stopCodons": {
       "enabled": true,
       "scoreWeight": 60
-    },
-    "snpClusters": {
-      "enabled": true,
-      "windowSize": 75,
-      "clusterCutOff": 7,
-      "scoreWeight": 30
     }
     },
     "cdsOrderPreference": [
