@@ -3,6 +3,7 @@
 - Update alignment parameters in pathogen.json:
     - Fix gap extension penalty
     - Enable reverse-complement handling
+- Add mutation cluster QC label
 
 ## 2025-11-20T19:02:04Z
 
