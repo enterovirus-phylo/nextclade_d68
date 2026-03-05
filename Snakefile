@@ -53,6 +53,15 @@ rule testing:
         "testing/EV-D68_fragments.fasta",
         "testing/EV-D68_recombinants.fasta"
 
+rule viz:
+    input: "results/auspice.json"
+    shell: "auspice view --datasetDir results"
+
+rule serve:
+    input: "out-dataset/pathogen.json","out-dataset/tree.json"
+    params: "out-dataset"
+    shell: "serve --cors {params} -l 3000"
+
 
 if FETCH_SEQUENCES == True:
     rule fetch:
