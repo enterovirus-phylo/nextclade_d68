@@ -605,6 +605,7 @@ rule subsample_example_sequences:
         tree_strains = "results/tree_strains.txt",  # strains in the tree
     output:
         example_sequences = "results/example_sequences.fasta",
+        tmp = temp("tmp/metadata.tmp"),
     params:
         strain_id_field = ID_FIELD,
     shell:
@@ -612,10 +613,10 @@ rule subsample_example_sequences:
         augur merge \
             --metadata metadata={input.metadata} clades={input.clades} \
             --metadata-id-columns {params.strain_id_field} \
-            --output-metadata metadata.tmp
+            --output-metadata {output.tmp}
         augur filter \
             --sequences {input.all_sequences} \
-            --metadata metadata.tmp \
+            --metadata {output.tmp} \
             --metadata-id-columns {params.strain_id_field} \
             --min-length 4000 \
             --include {input.incl_examples} \
@@ -625,7 +626,7 @@ rule subsample_example_sequences:
             --subsample-max-sequences 15  \
             --probabilistic-sampling \
             --output-sequences {output.example_sequences}
-        rm metadata.tmp
+
         """
         # seqkit grep -v -f {input.tree_strains} {input.all_sequences} \
         # | seqkit sample -n 100 -s 41 > {output.example_sequences}
@@ -707,8 +708,7 @@ rule mutLabels:
 
 
         jq --slurpfile v {output.properties} \
-           '.mutLabels.nucMutLabelMap = $v[0].nucMutLabelMap |
-            .mutLabels.nucMutLabelMapReverse = $v[0].nucMutLabelMapReverse' \
+           '.mutLabels.nucMutLabelMap = $v[0].nucMutLabelMap \
            {input.json} > {output.json}
 
         zip -rj dataset.zip  out-dataset/*

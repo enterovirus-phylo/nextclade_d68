@@ -115,7 +115,7 @@ def main():
         virus_json = {
             "schemaVersion": "1.10.0",
             "nucMutLabelMap": mut_dict,
-            "nucMutLabelMapReverse": dict(sorted(reverse_a_dict(mut_dict).items())),
+            # "nucMutLabelMapReverse": dict(sorted(reverse_a_dict(mut_dict).items())),
         }
 
         json.dump(virus_json, f_out, indent=2)
