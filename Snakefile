@@ -708,7 +708,7 @@ rule mutLabels:
 
 
         jq --slurpfile v {output.properties} \
-           '.mutLabels.nucMutLabelMap = $v[0].nucMutLabelMap \
+           '.mutLabels.nucMutLabelMap = $v[0].nucMutLabelMap' \
            {input.json} > {output.json}
 
         zip -rj dataset.zip  out-dataset/*
