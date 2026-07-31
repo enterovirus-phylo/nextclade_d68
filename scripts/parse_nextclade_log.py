@@ -170,14 +170,13 @@ def categorize_test_sequences(failed_sequences, fasta_file, qc_status, virus_nam
     """
     categories = {
         short_name: [],
-        'non_target': [],
+        related_label: [],
+        f'non-{related_label}': [],
         'fragments': [],
         'inter_recombinants': [],
         'intra_recombinants': []
     }
-    if related_label:
-        categories[related_label] = []
-
+      
     # Read all sequences and categorize them
     all_seqs = {}
     for record in SeqIO.parse(fasta_file, "fasta"):
@@ -193,11 +192,11 @@ def categorize_test_sequences(failed_sequences, fasta_file, qc_status, virus_nam
             categories['intra_recombinants'].append(seq_id)
         elif '_partial_' in seq_id:  # Fragments
             categories['fragments'].append(seq_id)
-        elif related_label and related_patterns and any(p in description for p in related_patterns):
+        elif related_label in description or related_patterns and any(p in description for p in related_patterns) or re.sub(r'\d+', '', virus_name).lower() in description.lower():
             if virus_name not in description and short_name not in description:
                 categories[related_label].append(seq_id)
         elif '|' in description:  # Non-target species (has pipe symbol)
-            categories['non_target'].append(seq_id)
+            categories[f'non-{related_label}'].append(seq_id)
         else:  # Target species
             categories[short_name].append(seq_id)
     

@@ -206,6 +206,7 @@ def generate_fragments(sequences_file, rivm_file, clades_file, nextstrain_file ,
     rivm_map = {}
     if rivm_file:
         rivm = pd.read_csv(rivm_file, sep=",")
+        rivm.dropna(axis=0, inplace=True)
         if "accession" in rivm:
             rivm_map = rivm.set_index("accession")["RIVM"].to_dict()
         elif "name" in rivm:
@@ -346,7 +347,7 @@ if __name__ == "__main__":
             print("Failed to fetch EV species sequences, skipping recombinant generation", file=sys.stderr)
             ev_file = None
     else:
-        print("Error: Either --evD file or --taxid must be provided", file=sys.stderr)
+        print("Error: Either --ev file or --taxid must be provided", file=sys.stderr)
         sys.exit(1)
 
     gff_file = Path("dataset/genome_annotation.gff3")
