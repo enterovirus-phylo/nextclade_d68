@@ -356,8 +356,14 @@ rule exclude:
             --metadata-id-columns {params.strain_id_field} \
             --exclude {input.exclude} {input.outliers} {input.example} \
             --output-sequences {output.filtered_sequences} \
-            --output-metadata {output.filtered_metadata} \
+            --output-metadata tmp.o \
             --output-strains {output.strains}
+
+        csvtk mutate2 -t \
+          -n url \
+          -e '"https://www.ncbi.nlm.nih.gov/nuccore/" + ${params.strain_id_field:q}' \
+          tmp.o > {output.filtered_metadata:q}
+        rm tmp.o
         """
 
 
@@ -778,7 +784,7 @@ rule test:
             {output.output}/recombinants.fasta \
             {input.non_targets} \
             "$RELATED_FILE" > {output.output}/all_test_sequences.fasta
-            
+
         # Run Nextclade
         echo "\nRunning Nextclade3 on all test sequences..."
         time nextclade3 run \
