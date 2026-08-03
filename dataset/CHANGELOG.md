@@ -1,4 +1,4 @@
-## Unreleased
+## 2026-04-14T11:55:23Z
 
 - Remove deprecated `nucMutLabelMapReverse` field (computed at runtime in v3)
 - Remove invalid `qc.divergence` rule (not a configurable parameter)
