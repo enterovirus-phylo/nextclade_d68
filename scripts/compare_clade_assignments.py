@@ -31,8 +31,15 @@ if __name__ == "__main__":
     recombinant_clades = recombinant_clades_arg.split(",") if recombinant_clades_arg else []
     # get nextclade tsv
     nc_df = pd.read_csv(nextclade_tsv, sep="\t", low_memory=False)
+
+    # repalce "A2/D" with "A2" in the nextclade clade column
+    nc_df["clade"] = nc_df["clade"].replace("A2/D", "A2")
+
     # get RIVM df
     rivm_df = pd.read_csv(rivm_file)
+
+    # replace "Could not assign" with "NA"
+    rivm_df["VP1 subgenogroup"] = rivm_df["VP1 subgenogroup"].replace("Could not assign", "NA")
 
     # get virus
     virus = (rivm_df.type.value_counts().index)[0]
