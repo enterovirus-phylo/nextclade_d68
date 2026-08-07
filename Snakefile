@@ -187,13 +187,25 @@ if STATIC_ANCESTRAL_INFERRENCE and not INFERRENCE_RERUN:
             echo "Combining sequences with ancestral root..."
             cat {input.seq} {input.inref} > {output.seq}
 
+            csvtk mutate2 -t \
+                -n url \
+                -e '"https://www.ncbi.nlm.nih.gov/nuccore/" + ${params.strain_id_field}' \
+                {input.meta} > meta.tmp
+
+            csvtk mutate2 -t \
+                -n url \
+                -e '"https://github.com/enterovirus-phylo/nextclade_d68/blob/master/resources/inferred-root.fasta"' \
+                {input.meta_ancestral} > ancestral.tmp
+            
             echo "Merging metadata..."
             augur merge \
-                --metadata metadata={input.meta} ancestral={input.meta_ancestral} \
+                --metadata metadata=meta.tmp ancestral=ancestral.tmp \
                 --metadata-id-columns {params.strain_id_field} \
                 --output-metadata {output.meta}
 
             echo "Static ancestral sequence imported successfully!"
+
+            rm meta.tmp ancestral.tmp
             """
 
 rule index_sequences:
@@ -229,7 +241,7 @@ rule filter:
         min_date="" if MIN_DATE == "" else "--min-date " + MIN_DATE,
         min_length="" if MIN_LENGTH == "" else "--min-length " + MIN_LENGTH,
         max_seqs = MAX_SEQS,
-        # categories = "country year", #TODO: add subsampling per category?
+        categories = "country year",
         strain_id_field = ID_FIELD,
     shell:
         """
@@ -241,6 +253,7 @@ rule filter:
             {params.min_length} \
             {params.min_date} \
             --include {input.include} \
+            --group-by {params.categories} \
             --subsample-max-sequences {params.max_seqs} \
             --output-sequences {output.filtered_sequences} \
             --output-metadata {output.filtered_metadata}
@@ -292,6 +305,7 @@ rule align:
         --min-length {params.min_length} \
         --max-alignment-attempts 5 \
         --include-reference false \
+        --retry-reverse-complement true \
         --output-tsv {output.tsv} \
         --output-translations {params.translation_template} \
         --output-fasta {output.alignment} 
@@ -340,6 +354,7 @@ rule exclude:
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         example = INCLUDE_EXAMPLES,
+        recombinants = "resources/recombinants.tsv",
 
     params:
         strain_id_field = ID_FIELD,
@@ -354,16 +369,10 @@ rule exclude:
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id_field} \
-            --exclude {input.exclude} {input.outliers} {input.example} \
+            --exclude {input.exclude} {input.outliers} {input.example} {input.recombinants} \
             --output-sequences {output.filtered_sequences} \
-            --output-metadata tmp.o \
+            --output-metadata {output.filtered_metadata} \
             --output-strains {output.strains}
-
-        csvtk mutate2 -t \
-          -n url \
-          -e '"https://www.ncbi.nlm.nih.gov/nuccore/" + ${params.strain_id_field:q}' \
-          tmp.o > {output.filtered_metadata:q}
-        rm tmp.o
         """
 
 
@@ -410,6 +419,7 @@ rule ancestral:
         tree=rules.refine.output.tree,
         alignment=rules.exclude.output.filtered_sequences,
         annotation=GENBANK_PATH,
+        ref = REFERENCE_PATH,
     output:
         node_data="results/muts.json",
         ancestral_sequences="results/ancestral_sequences.fasta",
@@ -423,7 +433,7 @@ rule ancestral:
             --tree {input.tree} \
             --alignment {input.alignment} \
             --annotation {input.annotation} \
-            --root-sequence {input.annotation} \
+            --root-sequence {input.ref} \
             --genes {params.genes} \
             --translations {params.translation_template} \
             --output-node-data {output.node_data} \
@@ -500,9 +510,6 @@ rule epitopes:
 
         manyXList = ["XXXXXXXXXXXX", "KEXXXXXXXXXX", "KERANXXXXXXX", "KERXXXXXXXXX", "KERAXXXXXXXX"]
         
-        # with open(input.anc_seqs) as fh:
-        #     anc = json.load(fh)["nodes"]
-
         # Read translation files
         vp1_anc = SeqIO.to_dict(SeqIO.parse(params.translation, "fasta"))
 
