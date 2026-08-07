@@ -25,11 +25,7 @@ MN240508
 KU844178
 KU844179
 NC_038308
-AY426531
-
-## recombinant
-KM892499
-KP455263
+# AY426531
 
 ## dropped in refine
 MN726792
@@ -41,6 +37,3 @@ PQ238721
 #highly diverged - or recombinant
 PQ415016
 PQ415015
-
-PZ210604
-PZ210603
