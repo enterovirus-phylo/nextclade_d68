@@ -15,28 +15,27 @@
       "url": "https://eve-lab.org/people/emma-hodcroft/"
     }
   ],  
-  "extensions": {
+    "extensions": {
     "nextclade": {
-      "clade_node_attrs": [
-      ],
       "ref_nodes": {
-        "default": "__root__",
+        "default": "Fermon",
+        "order": { "entries": ["Fermon"] },
         "builtins": {
           "__root__": {
-            "displayName": "Reference [AY426531.1]",
-            "description": "Fermon strain"
+            "displayName": "Static Inferred Ancestor",
+            "description": "Precomputed ancestral sequence (static)"
           }
         },
         "search": [
           {
-            "name": "InferredAncestor",
-            "displayName": "Static Inferred Ancestor",
-            "description": "Precomputed ancestral sequence (static)",
+            "name": "Fermon",
+            "displayName": "Reference [AY426531.1]",
+            "description": "Fermon strain",
             "criteria": [
               {
                 "node": [
                   {
-                    "name": ["ancestral_sequence"]
+                    "name": ["AY426531"]
                   }
                 ]
               }
