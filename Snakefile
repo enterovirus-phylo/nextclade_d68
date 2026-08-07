@@ -56,7 +56,7 @@ rule all:
         augur_jsons = "test_out/",
         data = "dataset.zip",
         seqs = "results/example_sequences.fasta",
-        json = "out-dataset/pathogen.json",
+        json = "results/virus_properties.json",
         **({"root": INFERRED_ANCESTOR} if STATIC_ANCESTRAL_INFERRENCE else {})
 
 rule viz:
@@ -64,7 +64,7 @@ rule viz:
     shell: "auspice view --datasetDir results"
 
 rule serve:
-    input: "out-dataset/pathogen.json","out-dataset/tree.json"
+    input: "out-dataset/tree.json","results/virus_properties.json"
     params: "out-dataset"
     shell: "serve --cors {params} -l 3000"
 
