@@ -695,6 +695,7 @@ rule mutLabels:
         table = "results/nextclade.tsv",
         clade = "results/clades_metadata.tsv",
         json = PATHOGEN_JSON,
+        dataset_zip = "dataset.zip",
     params:
         min_proportion = 0.2,
         high_threshold_proportion = 0.70,
@@ -739,7 +740,8 @@ rule test:
         non_targets = NON_TARGET_SEQUENCES,                      # sequences from other species (negative controls)
         related_species = RELATED_SPECIES_FASTA if os.path.exists(RELATED_SPECIES_FASTA) else [],  # or we do a Entrez with the taxonid
         reference = REFERENCE_PATH,
-        tree = "out-dataset/tree.json"
+        tree = "out-dataset/tree.json",
+        properties = "results/virus_properties.json",
     output:
         output = directory("test_out"),
     params:
