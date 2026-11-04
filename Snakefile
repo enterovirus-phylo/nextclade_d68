@@ -2,7 +2,7 @@
 REFERENCE_ACCESSION =   "AY426531"
 TAXON_ID =              42789
 GENES =                 ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
-ALLOWED_DIVERGENCE =    "1000" # TODO: lower this threshold to exclude outliers
+ALLOWED_DIVERGENCE =    "640" # TODO: lower this threshold to exclude outliers
 MIN_DATE =              "1990-01-01"
 MIN_LENGTH =            "6000" # is 6000 for whole genome build on Nextstrain
 MAX_SEQS =              "1200" #TODO: set to 10000 for testing
