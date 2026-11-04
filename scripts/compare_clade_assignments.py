@@ -45,7 +45,12 @@ if __name__ == "__main__":
     virus = (rivm_df.type.value_counts().index)[0]
     
     ## get report
+    # The RIVM tool truncates sequence names to 30 characters, so a plain merge on
+    # the full name would silently drop the longest fragment headers. Join on the
+    # part before the first "|" instead, which identifies the fragment already.
+    rivm_df["name"] = rivm_df["name"].str.split("|").str[0]
     rivm_clade = dict(zip(rivm_df["name"], rivm_df["VP1 subgenogroup"].fillna("NA")))
+    rivm_type = dict(zip(rivm_df["name"], rivm_df["type"].fillna("NA")))
 
     rows = []
     for _, row in nc_df.iterrows():
@@ -61,10 +66,12 @@ if __name__ == "__main__":
             "nextstrain_clade": ns_clade,
             "og_rivm": rivm_og,
             "nextclade_clade": row.get("clade", "NA") if pd.notna(row.get("clade")) else "NA",
-            "rivm_clade": rivm_clade.get(name, "NA"),
+            "rivm_clade": rivm_clade.get(name.split("|")[0], "NA"),
+            "rivm_type": rivm_type.get(name.split("|")[0], "NA"),
         })
 
     report_df = pd.DataFrame(rows)
+    report_df.replace("Could not assign", "NA", inplace=True)
     report_df.to_csv(report_tsv, sep="\t", index=False)
     print(f"Wrote {len(report_df)} rows to {report_tsv}")
 
@@ -76,8 +83,6 @@ if __name__ == "__main__":
 
     report_df["genome_position"] = report_df["fragment"].map(position)
     report_df["recombinant"] = report_df["nextclade_clade"].isin(recombinant_labels).map({True: 1, False: 0})
-
-    report_df.replace("Could not assign","NA", inplace=True)
 
     report_df["nextclade_success"] = report_df["nextclade_clade"].map({"NA": 0}).fillna(1)
     report_df["RIVM_success"] = report_df["rivm_clade"].map({"NA": 0}).fillna(1)
@@ -92,6 +97,14 @@ if __name__ == "__main__":
         (report_df["rivm_clade"] == report_df["og_rivm"]) & (report_df["og_rivm"] != "NA")
     ).map({True: 1, False: 0})
 
+    # Ground truth was available but the tool returned no assignment.
+    report_df["nextclade_missed"] = (
+        (report_df["nextstrain_clade"] != "NA") & (report_df["nextclade_success"] == 0)
+    ).map({True: 1, False: 0})
+    report_df["RIVM_missed"] = (
+        (report_df["og_rivm"] != "NA") & (report_df["RIVM_success"] == 0)
+    ).map({True: 1, False: 0})
+
     report_df.sort_values("length", inplace=True)
     
 
@@ -101,20 +114,29 @@ if __name__ == "__main__":
             "virus": virus,
             "method": "nextclade",
             "n_evaluable": (report_df["nextstrain_clade"] != "NA").sum(),
+            "n_with_truth": (report_df["nextstrain_clade"] != "NA").sum(),
             "n_assigned": report_df["nextclade_success"].sum(),
             "n_correct": report_df["nextclade_correct"].sum(),
+            "n_missed": report_df["nextclade_missed"].sum(),
+            "n_typed": report_df["nextclade_success"].sum(),
         },
         {
             "virus": virus,
             "method": "RIVM",
             "n_evaluable": (report_df["nextstrain_clade"] != "NA").sum(),
+            "n_with_truth": (report_df["og_rivm"] != "NA").sum(),
             "n_assigned": report_df["RIVM_success"].sum(),
             "n_correct": report_df["RIVM_correct"].sum(),
+            "n_missed": report_df["RIVM_missed"].sum(),
+            # fragments the RIVM tool typed as the expected virus (e.g. EV-A71)
+            "n_typed": (report_df["rivm_type"] == virus).sum(),
         },
     ])
     summary["pct_assigned"] = 100 * summary["n_assigned"] / summary["n_evaluable"]
     summary["pct_correct"] = 100 * summary["n_correct"] / summary["n_evaluable"]
     summary["pct_correct_given_assigned"] = 100 * summary["n_correct"] / summary["n_assigned"]
+    # Share of sequences the tool left unassigned despite a ground-truth clade being available.
+    summary["pct_missed_given_truth"] = 100 * summary["n_missed"] / summary["n_with_truth"]
 
     summary.to_csv(summary_file, sep="\t", index=False)
     print(f"Wrote {len(summary)} rows to {summary_file}")
