@@ -73,7 +73,13 @@
     "stopCodons": {
       "enabled": true,
       "scoreWeight": 60
-    }
+    },
+    "snpClusters": {
+      "enabled": true,
+      "windowSize": 100,
+      "clusterCutOff": 5,
+      "scoreWeight": 25
+    }  
   },
   "cdsOrderPreference": [
     "VP4",
