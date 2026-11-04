@@ -12,8 +12,8 @@
   },
   "attributes": {
     "name": "Enterovirus D68",
-    "reference name": "Human enterovirus 68 strain Fermon, complete genome.",
-    "reference accession": "AY426531.1"
+    "reference name": "Enterovirus D68 inferred ancestral sequence",
+    "reference accession": "ancestral_sequence"
   },
   "alignmentParams": {
     "penaltyGapExtend": 3,
