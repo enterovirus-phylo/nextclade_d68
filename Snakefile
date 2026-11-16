@@ -856,6 +856,22 @@ rule test_clades:
             {output.summary}
         """
 
+
+# minimal testing rule
+rule test_dataset:
+    input:
+        dataset = rules.assemble_dataset.output.dataset_zip,
+        sequences = rules.assemble_dataset.output.sequences,
+    output:
+        output = directory("test_out"),
+    shell:
+        """
+        nextclade3 run \
+            --input-dataset {input.dataset} \
+            --output-all {output.output} \
+            {input.sequences}
+        """
+
 rule clean:
     shell:
         """
